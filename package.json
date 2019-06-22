@@ -1,0 +1,24 @@
+{
+  "name": "@blockware/sdk-config",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/blockwarecom/sdk-nodejs-config.git"
+  },
+  "keywords": [
+    "blockware"
+  ],
+  "author": "Henrik Hofmeister <hh@blockware.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/blockwarecom/sdk-nodejs-config/issues"
+  },
+  "homepage": "https://github.com/blockwarecom/sdk-nodejs-config#readme",
+  "dependencies": {
+    "lodash": "4.17.11",
+    "request": "2.88.0",
+    "yaml": "1.6.0"
+  }
+}
