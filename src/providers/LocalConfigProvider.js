@@ -1,14 +1,7 @@
-const AbstractConfigProvider = require('./AbstractConfigProvider');
 const Request = require('request');
-const OS = require('os');
-const Path = require('path');
-const FS = require('fs');
-const YAML = require('yaml');
+const BlockwareClusterConfig = require('@blockware/sdk-config');
 
-const BLOCKWARE_CLUSTER_SERVICE_CONFIG_FILE = ".blockware/cluster-service.yml";
-const BLOCKWARE_CLUSTER_SERVICE_DEFAULT_PORT = "35100";
-
-const CONFIG_CLUSTER_PORT = "cluster.port";
+const AbstractConfigProvider = require('./AbstractConfigProvider');
 
 const HEADER_BLOCKWARE_SERVICE = "X-Blockware-Service";
 const HEADER_BLOCKWARE_SYSTEM = "X-Blockware-System";
@@ -22,8 +15,6 @@ class LocalConfigProvider extends AbstractConfigProvider {
 
     constructor(serviceName, systemId) {
         super(serviceName, systemId);
-
-        this._clusterConfig = null;
     }
 
     async getServerPort() {
@@ -76,40 +67,19 @@ class LocalConfigProvider extends AbstractConfigProvider {
     }
 
     async load() {
-        return {};
+        await this.getClusterConfig();
+    }
+
+    getProviderId() {
+        return this.getClusterServiceBaseUrl();
     }
 
     getClusterConfig() {
-        if (this._clusterConfig != null) {
-            return this._clusterConfig;
-        }
-
-        const userHomeDir = OS.homedir();
-
-        const configFile = Path.join(userHomeDir, BLOCKWARE_CLUSTER_SERVICE_CONFIG_FILE);
-
-        this._clusterConfig = {};
-
-        if (!FS.existsSync(configFile)) {
-            return clusterConfig;
-        }
-
-        const rawYAML = FS.readFileSync(configFile).toString();
-
-        this._clusterConfig = YAML.parse(rawYAML);
-
-        console.log('Read cluster config from file: %s', configFile);
-
-        return this._clusterConfig;
+        return BlockwareClusterConfig.getClusterConfig();
     }
 
     getClusterServiceBaseUrl() {
-
-        const clusterConfig = this.getClusterConfig();
-
-        const clusterPort = this._getValue(clusterConfig, CONFIG_CLUSTER_PORT, BLOCKWARE_CLUSTER_SERVICE_DEFAULT_PORT);
-
-        return 'http://localhost:' + clusterPort;
+        return BlockwareClusterConfig.getClusterServiceAddress();
     }
 
     getConfigBaseUrl() {

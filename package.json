@@ -1,6 +1,6 @@
 {
   "name": "@blockware/sdk-config",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "",
   "main": "index.js",
   "repository": {
@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/blockwarecom/sdk-nodejs-config#readme",
   "dependencies": {
+    "@blockware/cluster-config": "0.0.1",
     "lodash": "4.17.11",
     "request": "2.88.0",
     "yaml": "1.6.0"
