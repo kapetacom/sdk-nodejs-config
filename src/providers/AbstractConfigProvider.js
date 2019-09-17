@@ -2,17 +2,27 @@ const _ = require('lodash');
 
 class AbstractConfigProvider {
 
-    constructor(serviceName, systemId) {
-        this._serviceName = serviceName;
+    constructor(blockRef, systemId, instanceId) {
+        this._blockRef = blockRef;
         this._systemId = systemId;
+        this._instanceId = instanceId;
     }
 
-    getServiceName() {
-        return this._serviceName;
+    getBlockReference() {
+        return this._blockRef;
     }
 
     getSystemId() {
         return this._systemId;
+    }
+
+    getInstanceId() {
+        return this._instanceId;
+    }
+
+    setIdentity(systemId, instanceId) {
+        this._systemId = systemId;
+        this._instanceId = instanceId;
     }
 
     /**

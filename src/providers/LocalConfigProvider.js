@@ -1,10 +1,12 @@
 const Request = require('request');
-const BlockwareClusterConfig = require('@blockware/sdk-config');
+const YAML = require('yaml');
+const BlockwareClusterConfig = require('@blockware/cluster-config');
 
 const AbstractConfigProvider = require('./AbstractConfigProvider');
 
-const HEADER_BLOCKWARE_SERVICE = "X-Blockware-Service";
+const HEADER_BLOCKWARE_BLOCK = "X-Blockware-Block";
 const HEADER_BLOCKWARE_SYSTEM = "X-Blockware-System";
+const HEADER_BLOCKWARE_INSTANCE = "X-Blockware-Instance";
 
 const SERVER_PORT_TYPE = "rest";
 
@@ -13,8 +15,33 @@ const SERVER_PORT_TYPE = "rest";
  */
 class LocalConfigProvider extends AbstractConfigProvider {
 
-    constructor(serviceName, systemId) {
-        super(serviceName, systemId);
+    static async create(blockRef, systemId, instanceId) {
+        const configProvider = new LocalConfigProvider(blockRef, systemId, instanceId);
+
+        await configProvider.load();
+
+        await configProvider.resolveIdentity();
+
+        return configProvider;
+    }
+
+    constructor(blockRef, systemId, instanceId) {
+        super(blockRef, systemId, instanceId);
+    }
+
+    /**
+     * Resolve and verify system and instance id
+     * @returns {Promise<void>}
+     */
+    async resolveIdentity() {
+        console.log('Resolving identity for block: %s', this.getBlockReference());
+
+        const url = this.getIdentifyUrl();
+        const identity = await this._sendGET(url);
+
+        console.log('Identity resolved: \n - System ID: %s\n - Instance ID: %s', identity.systemId, identity.instanceId);
+
+        this.setIdentity(identity.systemId, identity.instanceId);
     }
 
     async getServerPort() {
@@ -23,8 +50,8 @@ class LocalConfigProvider extends AbstractConfigProvider {
         return await this._sendGET(url);
     }
 
-    async getServiceAddress(serviceName, portType) {
-        const url = this.getServiceClientUrl(serviceName, portType);
+    async getServiceAddress(resourceName, portType) {
+        const url = this.getServiceClientUrl(resourceName, portType);
 
         return await this._sendGET(url);
     }
@@ -32,9 +59,7 @@ class LocalConfigProvider extends AbstractConfigProvider {
     async getResourceInfo(resourceType, portType) {
         const url = this.getResourceInfoUrl(resourceType, portType);
 
-        const response = await this._sendGET(url);
-
-        return JSON.parse(response);
+        return await this._sendGET(url);
     }
 
     /**
@@ -50,8 +75,10 @@ class LocalConfigProvider extends AbstractConfigProvider {
             url: url
         };
 
-        opts.headers[HEADER_BLOCKWARE_SERVICE] = this.getServiceName();
+        opts.headers[HEADER_BLOCKWARE_BLOCK] = this.getBlockReference();
         opts.headers[HEADER_BLOCKWARE_SYSTEM] = this.getSystemId();
+        opts.headers[HEADER_BLOCKWARE_INSTANCE] = this.getInstanceId();
+
 
         return new Promise((resolve, reject) => {
             Request(opts, (err, response, body) => {
@@ -60,7 +87,30 @@ class LocalConfigProvider extends AbstractConfigProvider {
                     return;
                 }
 
-                resolve(body);
+                if (response.statusCode > 399) {
+                    reject(new Error('Request failed: ' + url + ' - Status: ' + response.statusCode));
+                    return;
+                }
+
+                let contentType = response.headers['content-type'] || 'text/plain';
+                contentType = contentType.split(/;/)[0].trim();
+
+                switch (contentType.toLowerCase()) {
+                    case 'application/json':
+                    case 'text/json':
+                        resolve(JSON.parse(body));
+                        break;
+
+                    case 'application/yaml':
+                    case 'text/yaml':
+                        resolve(YAML.parse(body));
+                        break;
+
+                    default:
+                        resolve(body);
+                        break;
+                }
+
             });
         });
 
@@ -83,7 +133,7 @@ class LocalConfigProvider extends AbstractConfigProvider {
     }
 
     getConfigBaseUrl() {
-        const subPath = `/config/${this.encode(this._serviceName)}`;
+        const subPath = `/config`;
         return this.getClusterServiceBaseUrl() + subPath;
     }
 
@@ -92,13 +142,18 @@ class LocalConfigProvider extends AbstractConfigProvider {
         return this.getConfigBaseUrl() + subPath;
     }
 
-    getServiceClientUrl(otherService, serviceType) {
-        const subPath = `/consumes/${this.encode(otherService)}/${this.encode(serviceType)}`;
+    getServiceClientUrl(resourceName, serviceType) {
+        const subPath = `/consumes/${this.encode(resourceName)}/${this.encode(serviceType)}`;
         return this.getConfigBaseUrl() + subPath;
     }
 
     getResourceInfoUrl(operatorType, portType) {
         const subPath = `/consumes/resource/${this.encode(operatorType)}/${this.encode(portType)}`;
+        return this.getConfigBaseUrl() + subPath;
+    }
+
+    getIdentifyUrl() {
+        const subPath = `/identity`;
         return this.getConfigBaseUrl() + subPath;
     }
 
