@@ -47,7 +47,7 @@ class Config {
      *
      * @return {Promise<ConfigProvider>}
      */
-    static async init(blockDir) {
+    static async init(blockDir, healthEndpoint) {
         if (PROVIDER) {
             throw new Error('Configuration already initialised once');
         }
@@ -99,6 +99,16 @@ class Config {
                 throw new Error("Unknown environment: " + systemType);
 
         }
+
+        await provider.registerInstance(healthEndpoint);
+
+        const exitHandler = async () => {
+            await provider.instanceStopped();
+            process.exit();
+        };
+
+        process.on('SIGINT', exitHandler);
+        process.on('SIGTERM', exitHandler);
 
         PROVIDER = provider;
 

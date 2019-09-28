@@ -61,6 +61,25 @@ class AbstractConfigProvider {
         throw new Error('Method not implemented');
     }
 
+    /**
+     * Registers this instance with the cluster service
+     *
+     * @param {string} [instanceHealthPath] A HTTP path that returns a non-error code when healthy. Optional
+     * @returns {Promise<void>}
+     */
+    async registerInstance(instanceHealthPath) {
+        throw new Error('Method not implemented');
+    }
+
+    /**
+     * Tells the cluster service that this instance is stopped
+     *
+     * @returns {Promise<void>}
+     */
+    async instanceStopped() {
+        throw new Error('Method not implemented');
+    }
+
     async load() {
         throw new Error('Method not implemented');
     }
