@@ -54,9 +54,10 @@ class AbstractConfigProvider {
      *
      * @param {string} resourceType
      * @param {string} portType
+     * @param {string} resourceName
      * @return {Promise<ResourceInfo>}
      */
-    async getResourceInfo(resourceType, portType) {
+    async getResourceInfo(resourceType, portType, resourceName) {
         throw new Error('Method not implemented');
     }
 

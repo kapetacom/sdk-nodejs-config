@@ -36,7 +36,7 @@ class LocalConfigProvider extends AbstractConfigProvider {
     async resolveIdentity() {
         console.log('Resolving identity for block: %s', this.getBlockReference());
 
-        const url = this.getIdentifyUrl();
+        const url = this.getIdentityUrl();
         const identity = await this._sendGET(url);
 
         console.log('Identity resolved: \n - System ID: %s\n - Instance ID: %s', identity.systemId, identity.instanceId);
@@ -56,8 +56,8 @@ class LocalConfigProvider extends AbstractConfigProvider {
         return await this._sendGET(url);
     }
 
-    async getResourceInfo(resourceType, portType) {
-        const url = this.getResourceInfoUrl(resourceType, portType);
+    async getResourceInfo(resourceType, portType, resourceName) {
+        const url = this.getResourceInfoUrl(resourceType, portType, resourceName);
 
         return await this._sendGET(url);
     }
@@ -147,12 +147,12 @@ class LocalConfigProvider extends AbstractConfigProvider {
         return this.getConfigBaseUrl() + subPath;
     }
 
-    getResourceInfoUrl(operatorType, portType) {
-        const subPath = `/consumes/resource/${this.encode(operatorType)}/${this.encode(portType)}`;
+    getResourceInfoUrl(operatorType, portType, resourceName) {
+        const subPath = `/consumes/resource/${this.encode(operatorType)}/${this.encode(portType)}/${this.encode(resourceName)}`;
         return this.getConfigBaseUrl() + subPath;
     }
 
-    getIdentifyUrl() {
+    getIdentityUrl() {
         const subPath = `/identity`;
         return this.getConfigBaseUrl() + subPath;
     }
