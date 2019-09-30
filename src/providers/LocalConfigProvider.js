@@ -50,6 +50,29 @@ class LocalConfigProvider extends AbstractConfigProvider {
         return await this._sendGET(url);
     }
 
+    async registerInstance(instanceHealthPath) {
+        const url = this.getInstanceUrl();
+        return await this._sendRequest({
+            url,
+            method: 'PUT',
+            headers: {
+                'Content-Type':'application/json'
+            },
+            body: JSON.stringify({
+                pid: process.pid,
+                health: instanceHealthPath
+            })
+        });
+    }
+
+    async instanceStopped() {
+        const url = this.getInstanceUrl();
+        return await this._sendRequest({
+            url,
+            method: 'DELETE'
+        });
+    }
+
     async getServiceAddress(resourceName, portType) {
         const url = this.getServiceClientUrl(resourceName, portType);
 
@@ -74,6 +97,22 @@ class LocalConfigProvider extends AbstractConfigProvider {
             headers: {},
             url: url
         };
+
+        return this._sendRequest(opts);
+    }
+
+    /**
+     * Send GET HTTP request to url
+     *
+     * @param url
+     * @return {Promise<string>}
+     * @private
+     */
+    _sendRequest(opts) {
+
+        if (!opts.headers) {
+            opts.headers = {};
+        }
 
         opts.headers[HEADER_BLOCKWARE_BLOCK] = this.getBlockReference();
         opts.headers[HEADER_BLOCKWARE_SYSTEM] = this.getSystemId();
@@ -113,7 +152,6 @@ class LocalConfigProvider extends AbstractConfigProvider {
 
             });
         });
-
     }
 
     async load() {
@@ -130,6 +168,11 @@ class LocalConfigProvider extends AbstractConfigProvider {
 
     getClusterServiceBaseUrl() {
         return BlockwareClusterConfig.getClusterServiceAddress();
+    }
+
+    getInstanceUrl() {
+        const subPath = `/instances`;
+        return this.getClusterServiceBaseUrl() + subPath;
     }
 
     getConfigBaseUrl() {
