@@ -36,7 +36,7 @@ class LocalConfigProvider extends AbstractConfigProvider {
     async resolveIdentity() {
         console.log('Resolving identity for block: %s', this.getBlockReference());
 
-        const url = this.getIdentifyUrl();
+        const url = this.getIdentityUrl();
         const identity = await this._sendGET(url);
 
         console.log('Identity resolved: \n - System ID: %s\n - Instance ID: %s', identity.systemId, identity.instanceId);
@@ -50,14 +50,37 @@ class LocalConfigProvider extends AbstractConfigProvider {
         return await this._sendGET(url);
     }
 
+    async registerInstance(instanceHealthPath) {
+        const url = this.getInstanceUrl();
+        return await this._sendRequest({
+            url,
+            method: 'PUT',
+            headers: {
+                'Content-Type':'application/json'
+            },
+            body: JSON.stringify({
+                pid: process.pid,
+                health: instanceHealthPath
+            })
+        });
+    }
+
+    async instanceStopped() {
+        const url = this.getInstanceUrl();
+        return await this._sendRequest({
+            url,
+            method: 'DELETE'
+        });
+    }
+
     async getServiceAddress(resourceName, portType) {
         const url = this.getServiceClientUrl(resourceName, portType);
 
         return await this._sendGET(url);
     }
 
-    async getResourceInfo(resourceType, portType) {
-        const url = this.getResourceInfoUrl(resourceType, portType);
+    async getResourceInfo(resourceType, portType, resourceName) {
+        const url = this.getResourceInfoUrl(resourceType, portType, resourceName);
 
         return await this._sendGET(url);
     }
@@ -74,6 +97,22 @@ class LocalConfigProvider extends AbstractConfigProvider {
             headers: {},
             url: url
         };
+
+        return this._sendRequest(opts);
+    }
+
+    /**
+     * Send GET HTTP request to url
+     *
+     * @param url
+     * @return {Promise<string>}
+     * @private
+     */
+    _sendRequest(opts) {
+
+        if (!opts.headers) {
+            opts.headers = {};
+        }
 
         opts.headers[HEADER_BLOCKWARE_BLOCK] = this.getBlockReference();
         opts.headers[HEADER_BLOCKWARE_SYSTEM] = this.getSystemId();
@@ -113,7 +152,6 @@ class LocalConfigProvider extends AbstractConfigProvider {
 
             });
         });
-
     }
 
     async load() {
@@ -132,6 +170,11 @@ class LocalConfigProvider extends AbstractConfigProvider {
         return BlockwareClusterConfig.getClusterServiceAddress();
     }
 
+    getInstanceUrl() {
+        const subPath = `/instances`;
+        return this.getClusterServiceBaseUrl() + subPath;
+    }
+
     getConfigBaseUrl() {
         const subPath = `/config`;
         return this.getClusterServiceBaseUrl() + subPath;
@@ -147,12 +190,12 @@ class LocalConfigProvider extends AbstractConfigProvider {
         return this.getConfigBaseUrl() + subPath;
     }
 
-    getResourceInfoUrl(operatorType, portType) {
-        const subPath = `/consumes/resource/${this.encode(operatorType)}/${this.encode(portType)}`;
+    getResourceInfoUrl(operatorType, portType, resourceName) {
+        const subPath = `/consumes/resource/${this.encode(operatorType)}/${this.encode(portType)}/${this.encode(resourceName)}`;
         return this.getConfigBaseUrl() + subPath;
     }
 
-    getIdentifyUrl() {
+    getIdentityUrl() {
         const subPath = `/identity`;
         return this.getConfigBaseUrl() + subPath;
     }
