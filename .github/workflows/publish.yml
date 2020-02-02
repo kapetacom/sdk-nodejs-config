@@ -24,8 +24,7 @@ jobs:
       - run: git add package*.json && git commit -m 'Autoupgrade dependencies' || exit 0
       - run: npm version patch
       - run: npm publish
-      - run: |
-          git push
         env:
           CI: true
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+      - run: git push
