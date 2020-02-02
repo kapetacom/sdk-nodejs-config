@@ -40,9 +40,10 @@ interface ConfigProvider {
      *
      * @param {string} resourceType
      * @param {string} portType
+     * @param {string} resourceName
      * @return {Promise<ResourceInfo>}
      */
-    getResourceInfo(resourceType, portType);
+    getResourceInfo(resourceType, portType, resourceName);
 
     /**
      * Load configuration
