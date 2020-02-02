@@ -17,7 +17,7 @@
   },
   "homepage": "https://github.com/blockwarecom/sdk-nodejs-config#readme",
   "dependencies": {
-    "@blockware/cluster-config": "0.0.3",
+    "@blockware/local-cluster-config": "0.0.7",
     "lodash": "4.17.11",
     "request": "2.88.0",
     "yaml": "1.6.0"

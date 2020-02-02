@@ -1,6 +1,6 @@
 const Request = require('request');
 const YAML = require('yaml');
-const BlockwareClusterConfig = require('@blockware/cluster-config');
+const BlockwareClusterConfig = require('@blockware/local-cluster-config');
 
 const AbstractConfigProvider = require('./AbstractConfigProvider');
 
@@ -8,7 +8,7 @@ const HEADER_BLOCKWARE_BLOCK = "X-Blockware-Block";
 const HEADER_BLOCKWARE_SYSTEM = "X-Blockware-System";
 const HEADER_BLOCKWARE_INSTANCE = "X-Blockware-Instance";
 
-const SERVER_PORT_TYPE = "rest";
+const DEFAULT_SERVER_PORT_TYPE = "rest";
 
 /**
  * Local config provider - used when running local blockware clusters during development and testing.
@@ -44,8 +44,17 @@ class LocalConfigProvider extends AbstractConfigProvider {
         this.setIdentity(identity.systemId, identity.instanceId);
     }
 
-    async getServerPort() {
-        const url = this.getProviderPort(SERVER_PORT_TYPE);
+    /**
+     * Get port to listen on for current instance
+     *
+     * @param [portType {string}] defaults to "rest"
+     * @return {Promise<string>}
+     */
+    async getServerPort(portType) {
+        if (!portType) {
+            portType = DEFAULT_SERVER_PORT_TYPE;
+        }
+        const url = this.getProviderPort(portType);
 
         return await this._sendGET(url);
     }
