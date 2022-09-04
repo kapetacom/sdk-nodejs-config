@@ -59,6 +59,10 @@ class LocalConfigProvider extends AbstractConfigProvider {
         return await this._sendGET(url);
     }
 
+    async getServerHost() {
+        return BlockwareClusterConfig.getClusterServiceHost();
+    }
+
     async registerInstance(instanceHealthPath) {
         const url = this.getInstanceUrl();
         return this._sendRequest({
