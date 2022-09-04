@@ -61,7 +61,7 @@ class LocalConfigProvider extends AbstractConfigProvider {
 
     async registerInstance(instanceHealthPath) {
         const url = this.getInstanceUrl();
-        return await this._sendRequest({
+        return this._sendRequest({
             url,
             method: 'PUT',
             headers: {
@@ -76,7 +76,7 @@ class LocalConfigProvider extends AbstractConfigProvider {
 
     async instanceStopped() {
         const url = this.getInstanceUrl();
-        return await this._sendRequest({
+        return this._sendRequest({
             url,
             method: 'DELETE'
         });
@@ -140,7 +140,7 @@ class LocalConfigProvider extends AbstractConfigProvider {
                     return;
                 }
 
-                let contentType = response.headers['content-type'] || 'text/plain';
+                let contentType = response.headers['content-type'] || 'text/plain';
                 contentType = contentType.split(/;/)[0].trim();
 
                 switch (contentType.toLowerCase()) {
