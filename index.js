@@ -2,8 +2,6 @@ const FS = require('fs');
 const Path = require('path');
 const LocalProvider = require('./src/providers/LocalConfigProvider');
 
-let PROVIDER = null;
-
 const BLOCKWARE_SYSTEM_TYPE = "BLOCKWARE_SYSTEM_TYPE";
 const BLOCKWARE_SYSTEM_ID = "BLOCKWARE_SYSTEM_ID";
 const BLOCKWARE_BLOCK_REF = "BLOCKWARE_BLOCK_REF";
@@ -13,7 +11,15 @@ const DEFAULT_SYSTEM_TYPE = "development";
 const DEFAULT_SYSTEM_ID = "";
 const DEFAULT_INSTANCE_ID = "";
 
-const CALLBACKS = [];
+if (!global.BW_SDK_NODEJS_CONFIG) {
+    //We want these values to be truly global within the VM
+    global.BW_SDK_NODEJS_CONFIG = {
+        PROVIDER: null,
+        CALLBACKS: []
+    }
+}
+
+const CONFIG = global.BW_SDK_NODEJS_CONFIG;
 
 function getSystemConfiguration(envVarName, defaultValue) {
     if (process.env[envVarName]) {
@@ -33,12 +39,12 @@ class Config {
      * @param {Function} callback
      */
     static onReady(callback) {
-        if (PROVIDER) {
-            callback(PROVIDER);
+        if (CONFIG.PROVIDER) {
+            callback(CONFIG.PROVIDER);
             return;
         }
 
-        CALLBACKS.push(callback);
+        CONFIG.CALLBACKS.push(callback);
     }
 
 
@@ -48,7 +54,7 @@ class Config {
      * @return {Promise<ConfigProvider>}
      */
     static async init(blockDir, healthEndpoint) {
-        if (PROVIDER) {
+        if (CONFIG.PROVIDER) {
             throw new Error('Configuration already initialised once');
         }
 
@@ -110,11 +116,11 @@ class Config {
         process.on('SIGINT', exitHandler);
         process.on('SIGTERM', exitHandler);
 
-        PROVIDER = provider;
+        CONFIG.PROVIDER = provider;
 
-        while(CALLBACKS.length > 0) {
-            const callback = CALLBACKS.shift();
-            await callback(PROVIDER);
+        while(CONFIG.CALLBACKS.length > 0) {
+            const callback = CONFIG.CALLBACKS.shift();
+            await callback(CONFIG.PROVIDER);
         }
 
         return provider;
