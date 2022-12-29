@@ -1,8 +1,12 @@
 {
   "name": "@blockware/sdk-config",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "description": "",
   "main": "index.js",
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/blockwarecom/sdk-nodejs-config.git"
