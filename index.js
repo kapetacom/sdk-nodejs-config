@@ -58,15 +58,11 @@ class Config {
             throw new Error('Configuration already initialised once');
         }
 
-        let blockYMLPath = Path.join(blockDir, 'block.yml');
+        let blockYMLPath = Path.join(blockDir, 'blockware.yml');
+
 
         if (!FS.existsSync(blockYMLPath)) {
-            //Try again with .yaml
-            blockYMLPath = Path.join(blockDir, 'block.yaml');
-        }
-
-        if (!FS.existsSync(blockYMLPath)) {
-            throw new Error('block.yml or block.yaml file not found in path: ' + blockDir + '. Path must be absolute and point to a folder with a valid block definition.');
+            throw new Error('blockware.yml file not found in path: ' + blockDir + '. Path must be absolute and point to a folder with a valid block definition.');
         }
 
         const systemType = getSystemConfiguration(
