@@ -63,7 +63,17 @@ class LocalConfigProvider extends AbstractConfigProvider {
         return BlockwareClusterConfig.getClusterServiceHost();
     }
 
-    async registerInstance(instanceHealthPath) {
+    /**
+     * Registry instance with cluster service
+     *
+     * @param {string} instanceHealthPath
+     * @param {string} [portType="rest"] Defaults to "rest"
+     * @return {Promise<string>}
+     */
+    async registerInstance(instanceHealthPath, portType) {
+        if (!portType) {
+            portType = DEFAULT_SERVER_PORT_TYPE;
+        }
         const url = this.getInstanceUrl();
         return this._sendRequest({
             url,
@@ -73,7 +83,8 @@ class LocalConfigProvider extends AbstractConfigProvider {
             },
             body: JSON.stringify({
                 pid: process.pid,
-                health: instanceHealthPath
+                health: instanceHealthPath,
+                portType
             })
         });
     }

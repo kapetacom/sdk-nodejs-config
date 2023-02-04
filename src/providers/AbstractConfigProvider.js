@@ -65,9 +65,11 @@ class AbstractConfigProvider {
      * Registers this instance with the cluster service
      *
      * @param {string} [instanceHealthPath] A HTTP path that returns a non-error code when healthy. Optional
+     * @param {string} [portType="rest"] Defaults to "rest"
+     *
      * @returns {Promise<void>}
      */
-    async registerInstance(instanceHealthPath) {
+    async registerInstance(instanceHealthPath, portType) {
         throw new Error('Method not implemented');
     }
 

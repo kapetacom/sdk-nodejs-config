@@ -52,9 +52,13 @@ class Config {
     /**
      * Inits and loads config provider
      *
+     * @param {string} blockDir
+     * @param {string} healthEndpoint
+     * @param {string} [portType="rest"]
+     *
      * @return {Promise<ConfigProvider>}
      */
-    static async init(blockDir, healthEndpoint) {
+    static async init(blockDir, healthEndpoint, portType) {
         if (CONFIG.PROVIDER) {
             throw new Error('Configuration already initialised once');
         }
@@ -109,7 +113,8 @@ class Config {
 
         }
 
-        await provider.registerInstance(healthEndpoint);
+        console.log('Registering health endpoint', healthEndpoint, portType);
+        await provider.registerInstance(healthEndpoint, portType);
 
         const exitHandler = async () => {
             await provider.instanceStopped();
