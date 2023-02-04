@@ -1,5 +1,6 @@
 const FS = require('fs');
 const Path = require('path');
+const YAML = require('yaml');
 const LocalProvider = require('./src/providers/LocalConfigProvider');
 
 const BLOCKWARE_SYSTEM_TYPE = "BLOCKWARE_SYSTEM_TYPE";
@@ -60,10 +61,16 @@ class Config {
 
         let blockYMLPath = Path.join(blockDir, 'blockware.yml');
 
-
         if (!FS.existsSync(blockYMLPath)) {
             throw new Error('blockware.yml file not found in path: ' + blockDir + '. Path must be absolute and point to a folder with a valid block definition.');
         }
+
+        const blockDefinition = YAML.parse(FS.readFileSync(blockYMLPath).toString());
+        if (!blockDefinition?.metadata?.name) {
+            throw new Error('blockware.yml file contained invalid YML: ' + blockDir + '. ');
+        }
+
+        const blockRefLocal = `${blockDefinition?.metadata?.name}:local`;
 
         const systemType = getSystemConfiguration(
             BLOCKWARE_SYSTEM_TYPE,
@@ -71,7 +78,7 @@ class Config {
 
         const blockRef = getSystemConfiguration(
             BLOCKWARE_BLOCK_REF,
-            'file://' + blockYMLPath);
+            blockRefLocal);
 
         const systemId = getSystemConfiguration(
             BLOCKWARE_SYSTEM_ID,
