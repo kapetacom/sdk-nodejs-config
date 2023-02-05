@@ -113,7 +113,6 @@ class Config {
 
         }
 
-        console.log('Registering health endpoint', healthEndpoint, portType);
         await provider.registerInstance(healthEndpoint, portType);
 
         const exitHandler = async () => {
