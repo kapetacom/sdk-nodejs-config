@@ -2,6 +2,7 @@ const FS = require('fs');
 const Path = require('path');
 const YAML = require('yaml');
 const LocalProvider = require('./src/providers/LocalConfigProvider');
+const KubernetesConfigProvider = require('./src/providers/KubernetesConfigProvider');
 
 const BLOCKWARE_SYSTEM_TYPE = "BLOCKWARE_SYSTEM_TYPE";
 const BLOCKWARE_SYSTEM_ID = "BLOCKWARE_SYSTEM_ID";
@@ -92,36 +93,34 @@ class Config {
             BLOCKWARE_INSTANCE_ID,
             DEFAULT_INSTANCE_ID);
 
+        /**
+         *
+         * @type {ConfigProvider}
+         */
         let provider = null;
 
         switch (systemType) {
-            case "staging":
-            case "sandbox":
-
-            case "production":
-            case "prod":
-                throw new Error("Unimplemented environment support: " + systemType);
+            case "k8s":
+            case "kubernetes":
+                provider = await KubernetesConfigProvider.create(blockRef, systemId, instanceId);
+                break;
 
             case "development":
             case "dev":
             case "local":
-                provider = await LocalProvider.create(blockRef, systemId, instanceId);
+                const localProvider = await LocalProvider.create(blockRef, systemId, instanceId);
+
+                //Only relevant locally:
+                await localProvider.registerInstance(healthEndpoint, portType);
+
+                provider = localProvider;
+
                 break;
 
             default:
                 throw new Error("Unknown environment: " + systemType);
 
         }
-
-        await provider.registerInstance(healthEndpoint, portType);
-
-        const exitHandler = async () => {
-            await provider.instanceStopped();
-            process.exit();
-        };
-
-        process.on('SIGINT', exitHandler);
-        process.on('SIGTERM', exitHandler);
 
         CONFIG.PROVIDER = provider;
 

@@ -1,5 +1,11 @@
 const _ = require('lodash');
 
+
+/**
+ * Base class for config providers
+ *
+ * @implements {ConfigProvider}
+ */
 class AbstractConfigProvider {
 
     constructor(blockRef, systemId, instanceId) {
@@ -20,6 +26,12 @@ class AbstractConfigProvider {
         return this._instanceId;
     }
 
+    /**
+     *
+     * @param systemId
+     * @param instanceId
+     * @protected
+     */
     setIdentity(systemId, instanceId) {
         this._systemId = systemId;
         this._instanceId = instanceId;
@@ -29,7 +41,7 @@ class AbstractConfigProvider {
      * Gets the primary server port for this service
      * @return {Promise<number>}
      */
-    async getServerPort() {
+    async getServerPort(portType) {
         throw new Error('Method not implemented');
     }
 
@@ -61,39 +73,13 @@ class AbstractConfigProvider {
         throw new Error('Method not implemented');
     }
 
-    /**
-     * Registers this instance with the cluster service
-     *
-     * @param {string} [instanceHealthPath] A HTTP path that returns a non-error code when healthy. Optional
-     * @param {string} [portType="rest"] Defaults to "rest"
-     *
-     * @returns {Promise<void>}
-     */
-    async registerInstance(instanceHealthPath, portType) {
+
+    getProviderId() {
         throw new Error('Method not implemented');
     }
 
-    /**
-     * Tells the cluster service that this instance is stopped
-     *
-     * @returns {Promise<void>}
-     */
-    async instanceStopped() {
+    getServerHost() {
         throw new Error('Method not implemented');
-    }
-
-    async load() {
-        throw new Error('Method not implemented');
-    }
-
-
-    _getValue(map, path, defaultValue) {
-        let out = _.get(map, path);
-        if (out === undefined) {
-            return defaultValue;
-        }
-
-        return out;
     }
 }
 

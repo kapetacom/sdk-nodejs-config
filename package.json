@@ -1,8 +1,9 @@
 {
   "name": "@blockware/sdk-config",
-  "version": "0.0.19",
+  "version": "0.0.20",
   "description": "",
   "main": "index.js",
+  "types": "types.d.ts",
   "private": false,
   "publishConfig": {
     "access": "public"

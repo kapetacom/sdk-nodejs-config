@@ -1,20 +1,27 @@
-const Request = require('request');
-const YAML = require('yaml');
+const Request = require("request");
+const YAML = require("yaml");
 const BlockwareClusterConfig = require('@blockware/local-cluster-config');
-
 const AbstractConfigProvider = require('./AbstractConfigProvider');
 
 const HEADER_BLOCKWARE_BLOCK = "X-Blockware-Block";
 const HEADER_BLOCKWARE_SYSTEM = "X-Blockware-System";
 const HEADER_BLOCKWARE_INSTANCE = "X-Blockware-Instance";
-
 const DEFAULT_SERVER_PORT_TYPE = "rest";
 
 /**
  * Local config provider - used when running local blockware clusters during development and testing.
+ *
+ * @implements {ConfigProvider}
  */
 class LocalConfigProvider extends AbstractConfigProvider {
 
+    /**
+     *
+     * @param {string} blockRef
+     * @param {string} systemId
+     * @param {string} instanceId
+     * @return {Promise<LocalConfigProvider>}
+     */
     static async create(blockRef, systemId, instanceId) {
         const configProvider = new LocalConfigProvider(blockRef, systemId, instanceId);
 
@@ -64,7 +71,7 @@ class LocalConfigProvider extends AbstractConfigProvider {
     }
 
     /**
-     * Registry instance with cluster service
+     * Register instance with cluster service
      *
      * @param {string} instanceHealthPath
      * @param {string} [portType="rest"] Defaults to "rest"
@@ -75,7 +82,7 @@ class LocalConfigProvider extends AbstractConfigProvider {
             portType = DEFAULT_SERVER_PORT_TYPE;
         }
         const url = this.getInstanceUrl();
-        return this._sendRequest({
+        await this._sendRequest({
             url,
             method: 'PUT',
             headers: {
@@ -87,6 +94,14 @@ class LocalConfigProvider extends AbstractConfigProvider {
                 portType
             })
         });
+
+        const exitHandler = async () => {
+            await provider.instanceStopped();
+            process.exit();
+        };
+
+        process.on('SIGINT', exitHandler);
+        process.on('SIGTERM', exitHandler);
     }
 
     async instanceStopped() {
@@ -107,75 +122,6 @@ class LocalConfigProvider extends AbstractConfigProvider {
         const url = this.getResourceInfoUrl(resourceType, portType, resourceName);
 
         return await this._sendGET(url);
-    }
-
-    /**
-     * Send GET HTTP request to url
-     *
-     * @param url
-     * @return {Promise<string>}
-     * @private
-     */
-    _sendGET(url) {
-        const opts = {
-            headers: {},
-            url: url
-        };
-
-        return this._sendRequest(opts);
-    }
-
-    /**
-     * Send GET HTTP request to url
-     *
-     * @param url
-     * @return {Promise<string>}
-     * @private
-     */
-    _sendRequest(opts) {
-
-        if (!opts.headers) {
-            opts.headers = {};
-        }
-
-        opts.headers[HEADER_BLOCKWARE_BLOCK] = this.getBlockReference();
-        opts.headers[HEADER_BLOCKWARE_SYSTEM] = this.getSystemId();
-        opts.headers[HEADER_BLOCKWARE_INSTANCE] = this.getInstanceId();
-
-
-        return new Promise((resolve, reject) => {
-            Request(opts, (err, response, body) => {
-                if (err) {
-                    reject(err);
-                    return;
-                }
-
-                if (response.statusCode > 399) {
-                    reject(new Error('Request failed: ' + url + ' - Status: ' + response.statusCode));
-                    return;
-                }
-
-                let contentType = response.headers['content-type'] || 'text/plain';
-                contentType = contentType.split(/;/)[0].trim();
-
-                switch (contentType.toLowerCase()) {
-                    case 'application/json':
-                    case 'text/json':
-                        resolve(JSON.parse(body));
-                        break;
-
-                    case 'application/yaml':
-                    case 'text/yaml':
-                        resolve(YAML.parse(body));
-                        break;
-
-                    default:
-                        resolve(body);
-                        break;
-                }
-
-            });
-        });
     }
 
     async load() {
@@ -226,6 +172,77 @@ class LocalConfigProvider extends AbstractConfigProvider {
 
     encode(text) {
         return encodeURIComponent(text.toLowerCase())
+    }
+
+
+
+    /**
+     * Send GET HTTP request to url
+     *
+     * @param url
+     * @return {Promise<any>}
+     * @protected
+     */
+    _sendGET(url) {
+        const opts = {
+            headers: {},
+            url: url
+        };
+
+        return this._sendRequest(opts);
+    }
+
+    /**
+     * Send GET HTTP request to url
+     *
+     * @param url
+     * @return {Promise<any>}
+     * @protected
+     */
+    _sendRequest(opts) {
+
+        if (!opts.headers) {
+            opts.headers = {};
+        }
+
+        opts.headers[HEADER_BLOCKWARE_BLOCK] = this.getBlockReference();
+        opts.headers[HEADER_BLOCKWARE_SYSTEM] = this.getSystemId();
+        opts.headers[HEADER_BLOCKWARE_INSTANCE] = this.getInstanceId();
+
+
+        return new Promise((resolve, reject) => {
+            Request(opts, (err, response, body) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+
+                if (response.statusCode > 399) {
+                    reject(new Error('Request failed: ' + opts.url + ' - Status: ' + response.statusCode));
+                    return;
+                }
+
+                let contentType = response.headers['content-type'] || 'text/plain';
+                contentType = contentType.split(/;/)[0].trim();
+
+                switch (contentType.toLowerCase()) {
+                    case 'application/json':
+                    case 'text/json':
+                        resolve(JSON.parse(body));
+                        break;
+
+                    case 'application/yaml':
+                    case 'text/yaml':
+                        resolve(YAML.parse(body));
+                        break;
+
+                    default:
+                        resolve(body);
+                        break;
+                }
+
+            });
+        });
     }
 }
 
