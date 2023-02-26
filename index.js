@@ -1,7 +1,7 @@
 const FS = require('fs');
 const Path = require('path');
 const YAML = require('yaml');
-const LocalProvider = require('./src/providers/LocalConfigProvider');
+const LocalConfigProvider = require('./src/providers/LocalConfigProvider');
 const KubernetesConfigProvider = require('./src/providers/KubernetesConfigProvider');
 
 const BLOCKWARE_SYSTEM_TYPE = "BLOCKWARE_SYSTEM_TYPE";
@@ -108,7 +108,7 @@ class Config {
             case "development":
             case "dev":
             case "local":
-                const localProvider = await LocalProvider.create(blockRef, systemId, instanceId);
+                const localProvider = await LocalConfigProvider.create(blockRef, systemId, instanceId);
 
                 //Only relevant locally:
                 await localProvider.registerInstance(healthEndpoint, portType);
