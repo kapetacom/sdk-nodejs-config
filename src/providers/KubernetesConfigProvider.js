@@ -23,12 +23,7 @@ class KubernetesConfigProvider extends AbstractConfigProvider {
      * @return {Promise<KubernetesConfigProvider>}
      */
     static async create(blockRef, systemId, instanceId) {
-        const configProvider = new KubernetesConfigProvider(blockRef, systemId, instanceId);
-
-        await configProvider.load();
-
-
-        return configProvider;
+        return new KubernetesConfigProvider(blockRef, systemId, instanceId);
     }
 
     constructor(blockRef, systemId, instanceId) {
