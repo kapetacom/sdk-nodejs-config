@@ -1,15 +1,15 @@
 const Request = require("request");
 const YAML = require("yaml");
-const BlockwareClusterConfig = require('@blockware/local-cluster-config');
+const KapetaClusterConfig = require('@kapeta/local-cluster-config');
 const AbstractConfigProvider = require('./AbstractConfigProvider');
 
-const HEADER_BLOCKWARE_BLOCK = "X-Blockware-Block";
-const HEADER_BLOCKWARE_SYSTEM = "X-Blockware-System";
-const HEADER_BLOCKWARE_INSTANCE = "X-Blockware-Instance";
+const HEADER_KAPETA_BLOCK = "X-Kapeta-Block";
+const HEADER_KAPETA_SYSTEM = "X-Kapeta-System";
+const HEADER_KAPETA_INSTANCE = "X-Kapeta-Instance";
 const DEFAULT_SERVER_PORT_TYPE = "rest";
 
 /**
- * Local config provider - used when running local blockware clusters during development and testing.
+ * Local config provider - used when running local kapeta clusters during development and testing.
  *
  * @implements {ConfigProvider}
  */
@@ -67,7 +67,7 @@ class LocalConfigProvider extends AbstractConfigProvider {
     }
 
     async getServerHost() {
-        return BlockwareClusterConfig.getClusterServiceHost();
+        return KapetaClusterConfig.getClusterServiceHost();
     }
 
     /**
@@ -133,11 +133,11 @@ class LocalConfigProvider extends AbstractConfigProvider {
     }
 
     getClusterConfig() {
-        return BlockwareClusterConfig.getClusterConfig();
+        return KapetaClusterConfig.getClusterConfig();
     }
 
     getClusterServiceBaseUrl() {
-        return BlockwareClusterConfig.getClusterServiceAddress();
+        return KapetaClusterConfig.getClusterServiceAddress();
     }
 
     getInstanceUrl() {
@@ -205,9 +205,9 @@ class LocalConfigProvider extends AbstractConfigProvider {
             opts.headers = {};
         }
 
-        opts.headers[HEADER_BLOCKWARE_BLOCK] = this.getBlockReference();
-        opts.headers[HEADER_BLOCKWARE_SYSTEM] = this.getSystemId();
-        opts.headers[HEADER_BLOCKWARE_INSTANCE] = this.getInstanceId();
+        opts.headers[HEADER_KAPETA_BLOCK] = this.getBlockReference();
+        opts.headers[HEADER_KAPETA_SYSTEM] = this.getSystemId();
+        opts.headers[HEADER_KAPETA_INSTANCE] = this.getInstanceId();
 
 
         return new Promise((resolve, reject) => {

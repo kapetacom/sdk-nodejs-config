@@ -4,10 +4,10 @@ const YAML = require('yaml');
 const LocalConfigProvider = require('./src/providers/LocalConfigProvider');
 const KubernetesConfigProvider = require('./src/providers/KubernetesConfigProvider');
 
-const BLOCKWARE_SYSTEM_TYPE = "BLOCKWARE_SYSTEM_TYPE";
-const BLOCKWARE_SYSTEM_ID = "BLOCKWARE_SYSTEM_ID";
-const BLOCKWARE_BLOCK_REF = "BLOCKWARE_BLOCK_REF";
-const BLOCKWARE_INSTANCE_ID = "BLOCKWARE_INSTANCE_ID";
+const KAPETA_SYSTEM_TYPE = "KAPETA_SYSTEM_TYPE";
+const KAPETA_SYSTEM_ID = "KAPETA_SYSTEM_ID";
+const KAPETA_BLOCK_REF = "KAPETA_BLOCK_REF";
+const KAPETA_INSTANCE_ID = "KAPETA_INSTANCE_ID";
 
 const DEFAULT_SYSTEM_TYPE = "development";
 const DEFAULT_SYSTEM_ID = "";
@@ -64,33 +64,33 @@ class Config {
             throw new Error('Configuration already initialised once');
         }
 
-        let blockYMLPath = Path.join(blockDir, 'blockware.yml');
+        let blockYMLPath = Path.join(blockDir, 'kapeta.yml');
 
         if (!FS.existsSync(blockYMLPath)) {
-            throw new Error('blockware.yml file not found in path: ' + blockDir + '. Path must be absolute and point to a folder with a valid block definition.');
+            throw new Error('kapeta.yml file not found in path: ' + blockDir + '. Path must be absolute and point to a folder with a valid block definition.');
         }
 
         const blockDefinition = YAML.parse(FS.readFileSync(blockYMLPath).toString());
         if (!blockDefinition?.metadata?.name) {
-            throw new Error('blockware.yml file contained invalid YML: ' + blockDir + '. ');
+            throw new Error('kapeta.yml file contained invalid YML: ' + blockDir + '. ');
         }
 
         const blockRefLocal = `${blockDefinition?.metadata?.name}:local`;
 
         const systemType = getSystemConfiguration(
-            BLOCKWARE_SYSTEM_TYPE,
+            KAPETA_SYSTEM_TYPE,
             DEFAULT_SYSTEM_TYPE).toLowerCase();
 
         const blockRef = getSystemConfiguration(
-            BLOCKWARE_BLOCK_REF,
+            KAPETA_BLOCK_REF,
             blockRefLocal);
 
         const systemId = getSystemConfiguration(
-            BLOCKWARE_SYSTEM_ID,
+            KAPETA_SYSTEM_ID,
             DEFAULT_SYSTEM_ID);
 
         const instanceId = getSystemConfiguration(
-            BLOCKWARE_INSTANCE_ID,
+            KAPETA_INSTANCE_ID,
             DEFAULT_INSTANCE_ID);
 
         /**

@@ -9,7 +9,7 @@ function toEnvName(name) {
 }
 
 /**
- * Kubernetes config provider - used when running blockware clusters within kubernetes
+ * Kubernetes config provider - used when running kapeta clusters within kubernetes
  *
  * @implements {ConfigProvider}
  */
@@ -39,7 +39,7 @@ class KubernetesConfigProvider extends AbstractConfigProvider {
             portType = DEFAULT_SERVER_PORT_TYPE;
         }
 
-        const envVar = `BLOCKWARE_PROVIDER_PORT_${toEnvName(portType)}`
+        const envVar = `KAPETA_PROVIDER_PORT_${toEnvName(portType)}`
         if (envVar in process.env) {
             return parseInt(process.env[envVar]);
         }
@@ -48,7 +48,7 @@ class KubernetesConfigProvider extends AbstractConfigProvider {
     }
 
     async getServiceAddress(resourceName, portType) {
-        const envVar = `BLOCKWARE_CONSUMER_SERVICE_${toEnvName(resourceName)}_${toEnvName(portType)}`
+        const envVar = `KAPETA_CONSUMER_SERVICE_${toEnvName(resourceName)}_${toEnvName(portType)}`
         if (envVar in process.env) {
             return process.env[envVar];
         }
@@ -57,7 +57,7 @@ class KubernetesConfigProvider extends AbstractConfigProvider {
     }
 
     async getResourceInfo(resourceType, portType, resourceName) {
-        const envVar = `BLOCKWARE_CONSUMER_RESOURCE_${toEnvName(resourceName)}_${toEnvName(portType)}`
+        const envVar = `KAPETA_CONSUMER_RESOURCE_${toEnvName(resourceName)}_${toEnvName(portType)}`
         if (envVar in process.env) {
             return process.env[envVar];
         }
@@ -66,7 +66,7 @@ class KubernetesConfigProvider extends AbstractConfigProvider {
     }
 
     async getServerHost() {
-        const envVar = `BLOCKWARE_PROVIDER_HOST`
+        const envVar = `KAPETA_PROVIDER_HOST`
         if (envVar in process.env) {
             return process.env[envVar];
         }

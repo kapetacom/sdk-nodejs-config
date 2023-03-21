@@ -1,6 +1,6 @@
 {
-  "name": "@blockware/sdk-config",
-  "version": "0.0.22",
+  "name": "@kapeta/sdk-config",
+  "version": "0.0.23",
   "description": "",
   "main": "index.js",
   "types": "types.d.ts",
@@ -13,16 +13,16 @@
     "url": "git+https://github.com/blockwarecom/sdk-nodejs-config.git"
   },
   "keywords": [
-    "blockware"
+    "kapeta"
   ],
-  "author": "Henrik Hofmeister <hh@blockware.com>",
+  "author": "Henrik Hofmeister <hh@kapeta.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/blockwarecom/sdk-nodejs-config/issues"
   },
   "homepage": "https://github.com/blockwarecom/sdk-nodejs-config#readme",
   "dependencies": {
-    "@blockware/local-cluster-config": "<2",
+    "@kapeta/local-cluster-config": "<2",
     "lodash": "4.17.21",
     "request": "2.88.2",
     "yaml": "2.2.1"
