@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/blockwarecom/sdk-nodejs-config.git"
+    "url": "git+https://github.com/kapetacom/sdk-nodejs-config.git"
   },
   "keywords": [
     "kapeta"
@@ -18,9 +18,9 @@
   "author": "Henrik Hofmeister <hh@kapeta.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/blockwarecom/sdk-nodejs-config/issues"
+    "url": "https://github.com/kapetacom/sdk-nodejs-config/issues"
   },
-  "homepage": "https://github.com/blockwarecom/sdk-nodejs-config#readme",
+  "homepage": "https://github.com/kapetacom/sdk-nodejs-config#readme",
   "dependencies": {
     "@kapeta/local-cluster-config": "<2",
     "lodash": "4.17.21",
