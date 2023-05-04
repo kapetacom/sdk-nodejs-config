@@ -8,10 +8,15 @@ const _ = require('lodash');
  */
 class AbstractConfigProvider {
 
-    constructor(blockRef, systemId, instanceId) {
+    constructor(blockRef, systemId, instanceId, blockDefinition) {
         this._blockRef = blockRef;
         this._systemId = systemId;
         this._instanceId = instanceId;
+        this._blockDefinition = blockDefinition;
+    }
+
+    getBlockDefinition() {
+        return this._blockDefinition;
     }
 
     getBlockReference() {
@@ -79,6 +84,17 @@ class AbstractConfigProvider {
     }
 
     getServerHost() {
+        throw new Error('Method not implemented');
+    }
+
+    /**
+     * Gets configuration value for a given object path
+     * @abstract
+     * @param {string} path object path in configuration - e.g. "some.nested.path"
+     * @param {any} [defaultValue]
+     * @return {Promise<any>}
+     */
+    getConfiguration(path, defaultValue) {
         throw new Error('Method not implemented');
     }
 }

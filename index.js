@@ -13,15 +13,15 @@ const DEFAULT_SYSTEM_TYPE = "development";
 const DEFAULT_SYSTEM_ID = "";
 const DEFAULT_INSTANCE_ID = "";
 
-if (!global.BW_SDK_NODEJS_CONFIG) {
+if (!global.KAPETA_SDK_NODEJS_CONFIG) {
     //We want these values to be truly global within the VM
-    global.BW_SDK_NODEJS_CONFIG = {
+    global.KAPETA_SDK_NODEJS_CONFIG = {
         PROVIDER: null,
         CALLBACKS: []
     }
 }
 
-const CONFIG = global.BW_SDK_NODEJS_CONFIG;
+const CONFIG = global.KAPETA_SDK_NODEJS_CONFIG;
 
 function getSystemConfiguration(envVarName, defaultValue) {
     if (process.env[envVarName]) {
@@ -38,7 +38,7 @@ class Config {
     /**
      * Provide callback for when configuration is ready.
      *
-     * @param {Function} callback
+     * @param {(provider:AbstractConfigProvider) => {}} callback
      */
     static onReady(callback) {
         if (CONFIG.PROVIDER) {
@@ -102,13 +102,23 @@ class Config {
         switch (systemType) {
             case "k8s":
             case "kubernetes":
-                provider = await KubernetesConfigProvider.create(blockRef, systemId, instanceId);
+                provider = await KubernetesConfigProvider.create(
+                    blockRef,
+                    systemId,
+                    instanceId,
+                    blockDefinition
+                );
                 break;
 
             case "development":
             case "dev":
             case "local":
-                const localProvider = await LocalConfigProvider.create(blockRef, systemId, instanceId);
+                const localProvider = await LocalConfigProvider.create(
+                    blockRef,
+                    systemId,
+                    instanceId,
+                    blockDefinition
+                );
 
                 //Only relevant locally:
                 await localProvider.registerInstance(healthEndpoint, portType);
