@@ -4,9 +4,11 @@ const YAML = require("yaml");
 const KapetaClusterConfig = require('@kapeta/local-cluster-config');
 const AbstractConfigProvider = require('./AbstractConfigProvider');
 
+const KAPETA_ENVIRONMENT_TYPE = "KAPETA_ENVIRONMENT_TYPE";
 const HEADER_KAPETA_BLOCK = "X-Kapeta-Block";
 const HEADER_KAPETA_SYSTEM = "X-Kapeta-System";
 const HEADER_KAPETA_INSTANCE = "X-Kapeta-Instance";
+const HEADER_KAPETA_ENVIRONMENT = "X-Kapeta-Environment";
 const DEFAULT_SERVER_PORT_TYPE = "rest";
 
 /**
@@ -73,13 +75,19 @@ class LocalConfigProvider extends AbstractConfigProvider {
         if (!portType) {
             portType = DEFAULT_SERVER_PORT_TYPE;
         }
+
+        if (process.env[`KAPETA_LOCAL_SERVER_PORT_${portType.toUpperCase()}`]) {
+            return process.env[`KAPETA_LOCAL_SERVER_PORT_${portType.toUpperCase()}`];
+        }
+
         const url = this.getProviderPort(portType);
 
         return await this._sendGET(url);
     }
 
     async getServerHost() {
-        return KapetaClusterConfig.getClusterServiceHost();
+        //Locally it's always this
+        return '127.0.0.1';
     }
 
     /**
@@ -229,6 +237,10 @@ class LocalConfigProvider extends AbstractConfigProvider {
             opts.headers = {};
         }
 
+        opts.headers[HEADER_KAPETA_ENVIRONMENT] = 'process';
+        if (process.env[KAPETA_ENVIRONMENT_TYPE]) {
+            opts.headers[HEADER_KAPETA_ENVIRONMENT] = process.env[KAPETA_ENVIRONMENT_TYPE];
+        }
         opts.headers[HEADER_KAPETA_BLOCK] = this.getBlockReference();
         opts.headers[HEADER_KAPETA_SYSTEM] = this.getSystemId();
         opts.headers[HEADER_KAPETA_INSTANCE] = this.getInstanceId();
