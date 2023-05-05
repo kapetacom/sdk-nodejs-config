@@ -1,6 +1,6 @@
 
 export default class Config {
-    static onReady(callback:() => void);
+    static onReady(callback:(provider:ConfigProvider) => void);
     static init(blockDir:string, healthEndpoint:string, portType:string):Promise<ConfigProvider>
 }
 
@@ -18,6 +18,11 @@ declare interface ResourceInfo {
 }
 
 declare interface ConfigProvider {
+
+    /**
+     * Get block definition
+     */
+    getBlockDefinition():any;
 
     /**
      * Gets block reference id
@@ -67,4 +72,9 @@ declare interface ConfigProvider {
      * Get identifier for the config provider
      */
     getProviderId():string
+
+    /**
+     * Get configuration from path
+     */
+    getConfiguration<T>(path:string, defaultValue?:T):T
 }

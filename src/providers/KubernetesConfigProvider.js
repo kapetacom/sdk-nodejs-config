@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const AbstractConfigProvider = require('./AbstractConfigProvider');
 
 const DEFAULT_SERVER_PORT_TYPE = "rest";
@@ -20,14 +21,17 @@ class KubernetesConfigProvider extends AbstractConfigProvider {
      * @param {string} blockRef
      * @param {string} systemId
      * @param {string} instanceId
+     * @param {BlockDefinition} blockDefinition
      * @return {Promise<KubernetesConfigProvider>}
      */
-    static async create(blockRef, systemId, instanceId) {
-        return new KubernetesConfigProvider(blockRef, systemId, instanceId);
+    static async create(blockRef, systemId, instanceId, blockDefinition) {
+        return new KubernetesConfigProvider(blockRef, systemId, instanceId, blockDefinition);
     }
 
-    constructor(blockRef, systemId, instanceId) {
-        super(blockRef, systemId, instanceId);
+    constructor(blockRef, systemId, instanceId, blockDefinition) {
+        super(blockRef, systemId, instanceId, blockDefinition);
+
+        this._configuration = null;
     }
 
     /**
@@ -77,6 +81,29 @@ class KubernetesConfigProvider extends AbstractConfigProvider {
 
     getProviderId() {
         return 'kubernetes';
+    }
+
+    getConfiguration(path, defaultValue) {
+        if (!this._configuration) {
+            const envVar = `KAPETA_INSTANCE_CONFIG`
+            if (envVar in process.env) {
+                try {
+                    this._configuration = JSON.parse(process.env[envVar]);
+                } catch (e) {
+                    throw new Error(`Invalid JSON in environment variable: ${envVar}`);
+                }
+            } else {
+                console.warn(`Missing environment variable for instance configuration: ${envVar}`);
+                return defaultValue;
+            }
+
+            if (!this._configuration) {
+                this._configuration = {};
+            }
+        }
+
+        return _.get(this._configuration, path, defaultValue);
+
     }
 }
 

@@ -1,4 +1,5 @@
 const Request = require("request");
+const _ = require('lodash');
 const YAML = require("yaml");
 const KapetaClusterConfig = require('@kapeta/local-cluster-config');
 const AbstractConfigProvider = require('./AbstractConfigProvider');
@@ -20,10 +21,11 @@ class LocalConfigProvider extends AbstractConfigProvider {
      * @param {string} blockRef
      * @param {string} systemId
      * @param {string} instanceId
+     * @param {BlockDefinition} blockDefinition
      * @return {Promise<LocalConfigProvider>}
      */
-    static async create(blockRef, systemId, instanceId) {
-        const configProvider = new LocalConfigProvider(blockRef, systemId, instanceId);
+    static async create(blockRef, systemId, instanceId, blockDefinition) {
+        const configProvider = new LocalConfigProvider(blockRef, systemId, instanceId, blockDefinition);
 
         await configProvider.load();
 
@@ -32,8 +34,9 @@ class LocalConfigProvider extends AbstractConfigProvider {
         return configProvider;
     }
 
-    constructor(blockRef, systemId, instanceId) {
-        super(blockRef, systemId, instanceId);
+    constructor(blockRef, systemId, instanceId, blockDefinition) {
+        super(blockRef, systemId, instanceId, blockDefinition);
+        this._configuration = {};
     }
 
     /**
@@ -49,6 +52,15 @@ class LocalConfigProvider extends AbstractConfigProvider {
         console.log('Identity resolved: \n - System ID: %s\n - Instance ID: %s', identity.systemId, identity.instanceId);
 
         this.setIdentity(identity.systemId, identity.instanceId);
+
+        await this.loadConfiguration();
+    }
+
+    async loadConfiguration() {
+        this._configuration = await this.getInstanceConfig();
+        if (!this._configuration) {
+            this._configuration = {};
+        }
     }
 
     /**
@@ -96,7 +108,7 @@ class LocalConfigProvider extends AbstractConfigProvider {
         });
 
         const exitHandler = async () => {
-            await provider.instanceStopped();
+            await this.instanceStopped();
             process.exit();
         };
 
@@ -124,8 +136,15 @@ class LocalConfigProvider extends AbstractConfigProvider {
         return await this._sendGET(url);
     }
 
+    async getInstanceConfig() {
+        const url = this.getInstanceConfigUrl();
+
+        return await this._sendGET(url);
+    }
+
     async load() {
         await this.getClusterConfig();
+
     }
 
     getProviderId() {
@@ -142,6 +161,11 @@ class LocalConfigProvider extends AbstractConfigProvider {
 
     getInstanceUrl() {
         const subPath = `/instances`;
+        return this.getClusterServiceBaseUrl() + subPath;
+    }
+
+    getInstanceConfigUrl() {
+        const subPath = `/config/instance`;
         return this.getClusterServiceBaseUrl() + subPath;
     }
 
@@ -243,6 +267,10 @@ class LocalConfigProvider extends AbstractConfigProvider {
 
             });
         });
+    }
+
+    getConfiguration(path, defaultValue) {
+        return _.get(this._configuration, path, defaultValue);
     }
 }
 
