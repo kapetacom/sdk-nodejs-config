@@ -87,7 +87,11 @@ class KubernetesConfigProvider extends AbstractConfigProvider {
         if (!this._configuration) {
             const envVar = `KAPETA_INSTANCE_CONFIG`
             if (envVar in process.env) {
-                this._configuration = JSON.parse(process.env[envVar]);
+                try {
+                    this._configuration = JSON.parse(process.env[envVar]);
+                } catch (e) {
+                    throw new Error(`Invalid JSON in environment variable: ${envVar}`);
+                }
             } else {
                 console.warn(`Missing environment variable for instance configuration: ${envVar}`);
                 return defaultValue;
