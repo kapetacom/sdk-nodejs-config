@@ -89,7 +89,8 @@ class KubernetesConfigProvider extends AbstractConfigProvider {
             if (envVar in process.env) {
                 this._configuration = JSON.parse(process.env[envVar]);
             } else {
-                throw new Error(`Missing environment variable for instance configuration: ${envVar}`);
+                console.warn(`Missing environment variable for instance configuration: ${envVar}`);
+                return defaultValue;
             }
 
             if (!this._configuration) {
