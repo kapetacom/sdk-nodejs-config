@@ -86,6 +86,9 @@ class LocalConfigProvider extends AbstractConfigProvider {
     }
 
     async getServerHost() {
+        if (process.env[`KAPETA_LOCAL_SERVER`]) {
+            return process.env[`KAPETA_LOCAL_SERVER`];
+        }
         //Locally it's always this
         return '127.0.0.1';
     }
