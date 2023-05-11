@@ -1,6 +1,6 @@
 {
   "name": "@kapeta/sdk-config",
-  "version": "0.0.29",
+  "version": "0.0.30",
   "description": "",
   "main": "index.js",
   "types": "types.d.ts",
@@ -15,6 +15,9 @@
   "keywords": [
     "kapeta"
   ],
+  "scripts" : {
+     "test": "jest"
+  },
   "author": "Henrik Hofmeister <hh@kapeta.com>",
   "license": "MIT",
   "bugs": {
@@ -25,6 +28,9 @@
     "@kapeta/local-cluster-config": "<2",
     "lodash": "4.17.21",
     "request": "2.88.2",
-    "yaml": "2.2.1"
+    "yaml": "2.2.2"
+  },
+  "devDependencies": {
+    "jest": "29.5.0"
   }
 }

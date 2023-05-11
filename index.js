@@ -3,6 +3,7 @@ const Path = require('path');
 const YAML = require('yaml');
 const LocalConfigProvider = require('./src/providers/LocalConfigProvider');
 const KubernetesConfigProvider = require('./src/providers/KubernetesConfigProvider');
+const DockerComposeConfigProvider = require('./src/providers/DockerComposeConfigProvider');
 
 const KAPETA_SYSTEM_TYPE = "KAPETA_SYSTEM_TYPE";
 const KAPETA_SYSTEM_ID = "KAPETA_SYSTEM_ID";
@@ -109,7 +110,14 @@ class Config {
                     blockDefinition
                 );
                 break;
-
+            case "docker-compose":
+                 provider = await DockerComposeConfigProvider.create(
+                    blockRef,
+                    systemId,
+                    instanceId,
+                    blockDefinition
+                );
+                break;
             case "development":
             case "dev":
             case "local":
