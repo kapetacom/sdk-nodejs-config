@@ -49,7 +49,9 @@ class DockerComposeConfigProvider extends AbstractConfigProvider {
         if (envVar in process.env) {
             return parseInt(process.env[envVar]);
         }
-
+        if(process.env['PORT'] !== undefined) {
+            return parseInt(process.env['PORT']);
+        }
         return 80; //We default to port 80
     }
 
