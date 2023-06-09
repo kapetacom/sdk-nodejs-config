@@ -1,3 +1,10 @@
+## [1.0.3](https://github.com/kapetacom/sdk-nodejs-config/compare/v1.0.2...v1.0.3) (2023-06-09)
+
+
+### Bug Fixes
+
+* Supprt mixed modules ([30a96d9](https://github.com/kapetacom/sdk-nodejs-config/commit/30a96d952227948c4d96ed2238374d60e483c9c8))
+
 ## [1.0.2](https://github.com/kapetacom/sdk-nodejs-config/compare/v1.0.1...v1.0.2) (2023-06-09)
 
 
