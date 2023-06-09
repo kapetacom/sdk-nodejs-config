@@ -1,6 +1,6 @@
 {
     "name": "@kapeta/sdk-config",
-    "version": "0.0.29",
+    "version": "1.0.0",
     "description": "Config API for Kapeta SDK",
     "type": "module",
     "exports": {
