@@ -1,5 +1,6 @@
 import { AbstractConfigProvider } from './AbstractConfigProvider';
 import _ from 'lodash';
+import { ResourceInfo } from '../types';
 
 const DEFAULT_SERVER_PORT_TYPE = 'rest';
 
@@ -62,7 +63,7 @@ export class KubernetesConfigProvider extends AbstractConfigProvider {
     async getResourceInfo(resourceType: string, portType: string, resourceName: string) {
         const envVar = `KAPETA_CONSUMER_RESOURCE_${toEnvName(resourceName)}_${toEnvName(portType)}`;
         if (envVar in process.env) {
-            return process.env[envVar]!;
+            return JSON.parse(process.env[envVar]!) as ResourceInfo;
         }
 
         throw new Error(`Missing environment variable for operator resource: ${envVar}`);

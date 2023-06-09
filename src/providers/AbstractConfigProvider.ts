@@ -1,4 +1,4 @@
-import { ConfigProvider } from '../types';
+import { ConfigProvider, ResourceInfo } from '../types';
 
 /**
  * Base class for config providers
@@ -46,7 +46,7 @@ export abstract class AbstractConfigProvider implements ConfigProvider {
 
     abstract getProviderId(): string;
 
-    abstract getResourceInfo(resourceType: string, portType: string, resourceName: string): Promise<string>;
+    abstract getResourceInfo(resourceType: string, portType: string, resourceName: string): Promise<ResourceInfo>;
 
     abstract getServerHost(): Promise<string>;
 

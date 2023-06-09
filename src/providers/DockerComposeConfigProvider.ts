@@ -1,11 +1,11 @@
-const _ = require('lodash');
-const fs = require('fs');
-
-const AbstractConfigProvider = require('./AbstractConfigProvider');
+import { AbstractConfigProvider } from './AbstractConfigProvider';
+import fs from 'fs';
+import _ from 'lodash';
+import { ResourceInfo } from '../types';
 
 const DEFAULT_SERVER_PORT_TYPE = 'rest';
 
-function toEnvName(name) {
+function toEnvName(name: string) {
     return name.toUpperCase().trim().replace(/[.,-]/g, '_');
 }
 
@@ -15,6 +15,7 @@ function toEnvName(name) {
  * @implements {ConfigProvider}
  */
 class DockerComposeConfigProvider extends AbstractConfigProvider {
+    private _configuration: any;
     /**
      *
      * @param {string} blockRef
@@ -23,11 +24,11 @@ class DockerComposeConfigProvider extends AbstractConfigProvider {
      * @param {BlockDefinition} blockDefinition
      * @return {Promise<DockerComposeConfigProvider>}
      */
-    static async create(blockRef, systemId, instanceId, blockDefinition) {
+    static async create(blockRef: string, systemId: string, instanceId: string, blockDefinition: object) {
         return new DockerComposeConfigProvider(blockRef, systemId, instanceId, blockDefinition);
     }
 
-    constructor(blockRef, systemId, instanceId, blockDefinition) {
+    constructor(blockRef: string, systemId: string, instanceId: string, blockDefinition: object) {
         super(blockRef, systemId, instanceId, blockDefinition);
         this.addPropertiesToEnv('/run/secrets/kapeta/kapeta.env');
         this._configuration = null;
@@ -37,25 +38,25 @@ class DockerComposeConfigProvider extends AbstractConfigProvider {
      * Get port to listen on for current instance
      *
      */
-    async getServerPort(portType) {
+    async getServerPort(portType: string) {
         if (!portType) {
             portType = DEFAULT_SERVER_PORT_TYPE;
         }
 
         const envVar = `KAPETA_PROVIDER_PORT_${toEnvName(portType)}`;
         if (envVar in process.env) {
-            return parseInt(process.env[envVar]);
+            return process.env[envVar]!;
         }
         if (process.env['PORT'] !== undefined) {
-            return parseInt(process.env['PORT']);
+            return process.env['PORT'];
         }
-        return 80; //We default to port 80
+        return '80'; //We default to port 80
     }
 
-    async getServiceAddress(resourceName, portType) {
+    async getServiceAddress(resourceName: string, portType: string) {
         const envVar = `KAPETA_CONSUMER_SERVICE_${toEnvName(resourceName)}_${toEnvName(portType)}`;
         if (envVar in process.env) {
-            return process.env[envVar];
+            return process.env[envVar]!;
         }
 
         throw new Error(`Missing environment variable for internal resource: ${envVar}`);
@@ -66,12 +67,12 @@ class DockerComposeConfigProvider extends AbstractConfigProvider {
      * @param {string} prefix
      * @returns {object}
      */
-    getEnvVarsWithPrefix(prefix) {
+    getEnvVarsWithPrefix(prefix: string) {
         const result = {};
         if (!prefix.endsWith('_')) {
             prefix = prefix + '_';
         }
-        for (let key in process.env) {
+        for (const key in process.env) {
             if (key.startsWith(prefix)) {
                 const parts = key.split('_');
 
@@ -81,9 +82,9 @@ class DockerComposeConfigProvider extends AbstractConfigProvider {
                 }
 
                 // Traverse the object using the remaining parts
-                let obj = result;
+                let obj: any = result;
                 while (parts.length > 1) {
-                    const part = parts.shift().toLowerCase();
+                    const part = parts.shift()!.toLowerCase();
                     if (!obj[part]) {
                         obj[part] = {};
                     }
@@ -98,7 +99,7 @@ class DockerComposeConfigProvider extends AbstractConfigProvider {
         return result;
     }
 
-    addPropertiesToEnv(filepath) {
+    addPropertiesToEnv(filepath: string) {
         try {
             const properties = fs.readFileSync(filepath, 'utf-8').split('\n');
 
@@ -113,7 +114,7 @@ class DockerComposeConfigProvider extends AbstractConfigProvider {
                 const [key, value] = property.split('=');
                 process.env[key] = value;
             }
-        } catch (err) {
+        } catch (err: any) {
             if (err.code === 'ENOENT') {
                 console.log(`Default Kapeta env file ${filepath} not found. Skipping...`);
             } else {
@@ -122,12 +123,12 @@ class DockerComposeConfigProvider extends AbstractConfigProvider {
         }
     }
 
-    getResourceInfo(resourceType, portType, resourceName) {
+    async getResourceInfo(resourceType: string, portType: string, resourceName: string) {
         const envVar = `KAPETA_CONSUMER_RESOURCE_${toEnvName(resourceName)}_${toEnvName(portType)}`;
         // loop through all env vars and find the one that has the envVar prefix
         const obj = this.getEnvVarsWithPrefix(envVar);
         if (obj) {
-            return obj;
+            return obj as ResourceInfo;
         }
 
         throw new Error(`Missing environment variable for operator resource: ${envVar}`);
@@ -136,7 +137,7 @@ class DockerComposeConfigProvider extends AbstractConfigProvider {
     async getServerHost() {
         const envVar = `KAPETA_PROVIDER_HOST`;
         if (envVar in process.env) {
-            return process.env[envVar];
+            return process.env[envVar]!;
         }
 
         //Any host within docker container
@@ -147,12 +148,12 @@ class DockerComposeConfigProvider extends AbstractConfigProvider {
         return 'docker-compose';
     }
 
-    getConfiguration(path, defaultValue) {
+    getConfiguration<T>(path: string, defaultValue?: T): T | undefined {
         if (!this._configuration) {
             const envVar = `KAPETA_INSTANCE_CONFIG`;
             if (envVar in process.env) {
                 try {
-                    this._configuration = JSON.parse(process.env[envVar]);
+                    this._configuration = JSON.parse(process.env[envVar]!);
                 } catch (e) {
                     throw new Error(`Invalid JSON in environment variable: ${envVar}`);
                 }
@@ -167,6 +168,14 @@ class DockerComposeConfigProvider extends AbstractConfigProvider {
         }
 
         return _.get(this._configuration, path, defaultValue);
+    }
+
+    async getInstanceHost(instanceId: string): Promise<string> {
+        throw new Error('Method not implemented.');
+    }
+
+    async getInstanceProviderUrl(instanceId: string, portType: string, resourceName: string): Promise<string> {
+        throw new Error('Method not implemented.');
     }
 }
 

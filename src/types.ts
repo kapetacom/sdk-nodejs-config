@@ -63,12 +63,9 @@ export interface ConfigProvider {
     getServiceAddress(serviceName: string, portType: string): Promise<string>;
 
     /**
-     *
-     * @param {string} resourceType
-     * @param {string} portType
-     * @param {string} resourceName
+     * Get resource info for given resource type, port type and resource name
      */
-    getResourceInfo(resourceType: string, portType: string, resourceName: string): Promise<string>;
+    getResourceInfo(resourceType: string, portType: string, resourceName: string): Promise<ResourceInfo>;
 
     /**
      * Get base url for instance and resource

@@ -3,7 +3,7 @@ import _ from 'lodash';
 import * as YAML from 'yaml';
 import KapetaClusterConfig from '@kapeta/local-cluster-config';
 import { AbstractConfigProvider } from './AbstractConfigProvider';
-import { Identity } from '../types';
+import { Identity, ResourceInfo } from '../types';
 
 type RequestOptions = Request.CoreOptions & Request.RequiredUriUrl & Request.UrlOptions & Request.OptionsWithUrl;
 
@@ -146,7 +146,7 @@ export class LocalConfigProvider extends AbstractConfigProvider {
     async getResourceInfo(resourceType: string, portType: string, resourceName: string) {
         const url = this.getResourceInfoUrl(resourceType, portType, resourceName);
 
-        return await this._sendGET<string>(url);
+        return await this._sendGET<ResourceInfo>(url);
     }
 
     async getInstanceProviderUrl(instanceId: string, portType: string, resourceName: string) {
