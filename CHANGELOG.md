@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/kapetacom/sdk-nodejs-config/compare/v1.0.0...v1.0.1) (2023-06-09)
+
+
+### Bug Fixes
+
+* Add README ([1e5bde1](https://github.com/kapetacom/sdk-nodejs-config/commit/1e5bde178ae21d80c3c9d502b24f21a13964e198))
+
 # 1.0.0 (2023-06-09)
 
 ### Bug Fixes
