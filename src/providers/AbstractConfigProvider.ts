@@ -1,4 +1,4 @@
-import { ConfigProvider, ResourceInfo } from '../types';
+import { ConfigProvider } from '../types';
 
 /**
  * Base class for config providers

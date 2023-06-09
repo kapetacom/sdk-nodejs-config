@@ -2,6 +2,7 @@ import YAML from 'yaml';
 import Path from 'path';
 import FS from 'fs';
 import { ConfigProvider, InstanceProviderValue, InstanceValue } from './src/types';
+
 import { KubernetesConfigProvider } from './src/providers/KubernetesConfigProvider';
 import { LocalConfigProvider } from './src/providers/LocalConfigProvider';
 
@@ -195,4 +196,8 @@ class Config {
     }
 }
 
-module.exports = Config;
+export * from './src/types';
+export * from './src/providers/AbstractConfigProvider';
+export * from './src/providers/LocalConfigProvider';
+export * from './src/providers/KubernetesConfigProvider';
+export default Config;

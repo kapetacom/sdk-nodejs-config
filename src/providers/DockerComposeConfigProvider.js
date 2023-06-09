@@ -3,12 +3,10 @@ const fs = require('fs');
 
 const AbstractConfigProvider = require('./AbstractConfigProvider');
 
-const DEFAULT_SERVER_PORT_TYPE = "rest";
+const DEFAULT_SERVER_PORT_TYPE = 'rest';
 
 function toEnvName(name) {
-    return name.toUpperCase()
-        .trim()
-        .replace(/[.,-]/g,'_');
+    return name.toUpperCase().trim().replace(/[.,-]/g, '_');
 }
 
 /**
@@ -17,7 +15,6 @@ function toEnvName(name) {
  * @implements {ConfigProvider}
  */
 class DockerComposeConfigProvider extends AbstractConfigProvider {
-
     /**
      *
      * @param {string} blockRef
@@ -32,7 +29,7 @@ class DockerComposeConfigProvider extends AbstractConfigProvider {
 
     constructor(blockRef, systemId, instanceId, blockDefinition) {
         super(blockRef, systemId, instanceId, blockDefinition);
-	this.addPropertiesToEnv('/run/secrets/kapeta/kapeta.env')
+        this.addPropertiesToEnv('/run/secrets/kapeta/kapeta.env');
         this._configuration = null;
     }
 
@@ -45,18 +42,18 @@ class DockerComposeConfigProvider extends AbstractConfigProvider {
             portType = DEFAULT_SERVER_PORT_TYPE;
         }
 
-        const envVar = `KAPETA_PROVIDER_PORT_${toEnvName(portType)}`
+        const envVar = `KAPETA_PROVIDER_PORT_${toEnvName(portType)}`;
         if (envVar in process.env) {
             return parseInt(process.env[envVar]);
         }
-        if(process.env['PORT'] !== undefined) {
+        if (process.env['PORT'] !== undefined) {
             return parseInt(process.env['PORT']);
         }
         return 80; //We default to port 80
     }
 
     async getServiceAddress(resourceName, portType) {
-        const envVar = `KAPETA_CONSUMER_SERVICE_${toEnvName(resourceName)}_${toEnvName(portType)}`
+        const envVar = `KAPETA_CONSUMER_SERVICE_${toEnvName(resourceName)}_${toEnvName(portType)}`;
         if (envVar in process.env) {
             return process.env[envVar];
         }
@@ -65,68 +62,68 @@ class DockerComposeConfigProvider extends AbstractConfigProvider {
     }
 
     /*
-        * Get the resource info as an object for a given resource, by looping through all env vars and finding the one that has the prefix
-        * @param {string} prefix
-        * @returns {object}
-    */ 
+     * Get the resource info as an object for a given resource, by looping through all env vars and finding the one that has the prefix
+     * @param {string} prefix
+     * @returns {object}
+     */
     getEnvVarsWithPrefix(prefix) {
         const result = {};
-        if(!prefix.endsWith('_')) {
+        if (!prefix.endsWith('_')) {
             prefix = prefix + '_';
         }
         for (let key in process.env) {
-          if (key.startsWith(prefix)) {
-            const parts = key.split('_');
-      
-            // Skip the prefix
-            for(let i = 1; i < prefix.split('_').length; i++) {
-                parts.shift();
+            if (key.startsWith(prefix)) {
+                const parts = key.split('_');
+
+                // Skip the prefix
+                for (let i = 1; i < prefix.split('_').length; i++) {
+                    parts.shift();
+                }
+
+                // Traverse the object using the remaining parts
+                let obj = result;
+                while (parts.length > 1) {
+                    const part = parts.shift().toLowerCase();
+                    if (!obj[part]) {
+                        obj[part] = {};
+                    }
+                    obj = obj[part];
+                }
+
+                // Set the value of the leaf object
+                obj[parts[0].toLocaleLowerCase()] = process.env[key];
             }
-      
-            // Traverse the object using the remaining parts
-            let obj = result;
-            while (parts.length > 1) {
-              const part = parts.shift().toLowerCase();
-              if (!obj[part]) {
-                obj[part] = {};
-              }
-              obj = obj[part];
-            }
-      
-            // Set the value of the leaf object
-            obj[parts[0].toLocaleLowerCase()] = process.env[key];
-          }
         }
-      
+
         return result;
-      }
+    }
 
     addPropertiesToEnv(filepath) {
-	try {
-	    const properties = fs.readFileSync(filepath, 'utf-8').split('\n');
+        try {
+            const properties = fs.readFileSync(filepath, 'utf-8').split('\n');
 
-	    for (let i = 0; i < properties.length; i++) {
-		const property = properties[i].trim();
+            for (let i = 0; i < properties.length; i++) {
+                const property = properties[i].trim();
 
-		// Ignore comments and empty lines
-		if (property.startsWith('#') || property === '') {
-		    continue;
-		}
+                // Ignore comments and empty lines
+                if (property.startsWith('#') || property === '') {
+                    continue;
+                }
 
-		const [key, value] = property.split('=');
-		process.env[key] = value;
-	    }
-	} catch (err) {
-	    if (err.code === 'ENOENT') {
-		console.log(`Default Kapeta env file ${filepath} not found. Skipping...`);
-	    } else {
-		throw err;
-	    }
-	}
+                const [key, value] = property.split('=');
+                process.env[key] = value;
+            }
+        } catch (err) {
+            if (err.code === 'ENOENT') {
+                console.log(`Default Kapeta env file ${filepath} not found. Skipping...`);
+            } else {
+                throw err;
+            }
+        }
     }
 
     getResourceInfo(resourceType, portType, resourceName) {
-        const envVar = `KAPETA_CONSUMER_RESOURCE_${toEnvName(resourceName)}_${toEnvName(portType)}`
+        const envVar = `KAPETA_CONSUMER_RESOURCE_${toEnvName(resourceName)}_${toEnvName(portType)}`;
         // loop through all env vars and find the one that has the envVar prefix
         const obj = this.getEnvVarsWithPrefix(envVar);
         if (obj) {
@@ -137,7 +134,7 @@ class DockerComposeConfigProvider extends AbstractConfigProvider {
     }
 
     async getServerHost() {
-        const envVar = `KAPETA_PROVIDER_HOST`
+        const envVar = `KAPETA_PROVIDER_HOST`;
         if (envVar in process.env) {
             return process.env[envVar];
         }
@@ -152,7 +149,7 @@ class DockerComposeConfigProvider extends AbstractConfigProvider {
 
     getConfiguration(path, defaultValue) {
         if (!this._configuration) {
-            const envVar = `KAPETA_INSTANCE_CONFIG`
+            const envVar = `KAPETA_INSTANCE_CONFIG`;
             if (envVar in process.env) {
                 try {
                     this._configuration = JSON.parse(process.env[envVar]);
@@ -170,9 +167,7 @@ class DockerComposeConfigProvider extends AbstractConfigProvider {
         }
 
         return _.get(this._configuration, path, defaultValue);
-
     }
 }
-
 
 module.exports = DockerComposeConfigProvider;
