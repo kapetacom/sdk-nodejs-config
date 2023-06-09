@@ -1,22 +1,26 @@
-const Request = require("request");
-const _ = require('lodash');
-const YAML = require("yaml");
-const KapetaClusterConfig = require('@kapeta/local-cluster-config');
-const AbstractConfigProvider = require('./AbstractConfigProvider');
+import Request from 'request';
+import _ from 'lodash';
+import * as YAML from 'yaml';
+import KapetaClusterConfig from '@kapeta/local-cluster-config';
+import { AbstractConfigProvider } from './AbstractConfigProvider';
+import { Identity } from '../types';
 
-const KAPETA_ENVIRONMENT_TYPE = "KAPETA_ENVIRONMENT_TYPE";
-const HEADER_KAPETA_BLOCK = "X-Kapeta-Block";
-const HEADER_KAPETA_SYSTEM = "X-Kapeta-System";
-const HEADER_KAPETA_INSTANCE = "X-Kapeta-Instance";
-const HEADER_KAPETA_ENVIRONMENT = "X-Kapeta-Environment";
-const DEFAULT_SERVER_PORT_TYPE = "rest";
+type RequestOptions = Request.CoreOptions & Request.RequiredUriUrl & Request.UrlOptions & Request.OptionsWithUrl;
+
+const KAPETA_ENVIRONMENT_TYPE = 'KAPETA_ENVIRONMENT_TYPE';
+const HEADER_KAPETA_BLOCK = 'X-Kapeta-Block';
+const HEADER_KAPETA_SYSTEM = 'X-Kapeta-System';
+const HEADER_KAPETA_INSTANCE = 'X-Kapeta-Instance';
+const HEADER_KAPETA_ENVIRONMENT = 'X-Kapeta-Environment';
+const DEFAULT_SERVER_PORT_TYPE = 'rest';
 
 /**
  * Local config provider - used when running local kapeta clusters during development and testing.
  *
  * @implements {ConfigProvider}
  */
-class LocalConfigProvider extends AbstractConfigProvider {
+export class LocalConfigProvider extends AbstractConfigProvider {
+    private _configuration: any;
 
     /**
      *
@@ -26,7 +30,7 @@ class LocalConfigProvider extends AbstractConfigProvider {
      * @param {BlockDefinition} blockDefinition
      * @return {Promise<LocalConfigProvider>}
      */
-    static async create(blockRef, systemId, instanceId, blockDefinition) {
+    static async create(blockRef: string, systemId: string, instanceId: string, blockDefinition: object) {
         const configProvider = new LocalConfigProvider(blockRef, systemId, instanceId, blockDefinition);
 
         await configProvider.load();
@@ -36,7 +40,7 @@ class LocalConfigProvider extends AbstractConfigProvider {
         return configProvider;
     }
 
-    constructor(blockRef, systemId, instanceId, blockDefinition) {
+    constructor(blockRef: string, systemId: string, instanceId: string, blockDefinition: object) {
         super(blockRef, systemId, instanceId, blockDefinition);
         this._configuration = {};
     }
@@ -49,9 +53,13 @@ class LocalConfigProvider extends AbstractConfigProvider {
         console.log('Resolving identity for block: %s', this.getBlockReference());
 
         const url = this.getIdentityUrl();
-        const identity = await this._sendGET(url);
+        const identity = await this._sendGET<Identity>(url);
 
-        console.log('Identity resolved: \n - System ID: %s\n - Instance ID: %s', identity.systemId, identity.instanceId);
+        console.log(
+            'Identity resolved: \n - System ID: %s\n - Instance ID: %s',
+            identity.systemId,
+            identity.instanceId
+        );
 
         this.setIdentity(identity.systemId, identity.instanceId);
 
@@ -68,21 +76,19 @@ class LocalConfigProvider extends AbstractConfigProvider {
     /**
      * Get port to listen on for current instance
      *
-     * @param [portType {string}] defaults to "rest"
-     * @return {Promise<string>}
      */
-    async getServerPort(portType) {
+    async getServerPort(portType: string = 'rest'): Promise<string> {
         if (!portType) {
             portType = DEFAULT_SERVER_PORT_TYPE;
         }
 
         if (process.env[`KAPETA_LOCAL_SERVER_PORT_${portType.toUpperCase()}`]) {
-            return process.env[`KAPETA_LOCAL_SERVER_PORT_${portType.toUpperCase()}`];
+            return process.env[`KAPETA_LOCAL_SERVER_PORT_${portType.toUpperCase()}`]!;
         }
 
         const url = this.getProviderPort(portType);
 
-        return await this._sendGET(url);
+        return await this._sendGET<string>(url);
     }
 
     async getServerHost() {
@@ -95,12 +101,8 @@ class LocalConfigProvider extends AbstractConfigProvider {
 
     /**
      * Register instance with cluster service
-     *
-     * @param {string} instanceHealthPath
-     * @param {string} [portType="rest"] Defaults to "rest"
-     * @return {Promise<string>}
      */
-    async registerInstance(instanceHealthPath, portType) {
+    async registerInstance(instanceHealthPath: string, portType: string = 'rest') {
         if (!portType) {
             portType = DEFAULT_SERVER_PORT_TYPE;
         }
@@ -109,13 +111,13 @@ class LocalConfigProvider extends AbstractConfigProvider {
             url,
             method: 'PUT',
             headers: {
-                'Content-Type':'application/json'
+                'Content-Type': 'application/json',
             },
             body: JSON.stringify({
                 pid: process.pid,
                 health: instanceHealthPath,
-                portType
-            })
+                portType,
+            }),
         });
 
         const exitHandler = async () => {
@@ -131,34 +133,45 @@ class LocalConfigProvider extends AbstractConfigProvider {
         const url = this.getInstanceUrl();
         return this._sendRequest({
             url,
-            method: 'DELETE'
+            method: 'DELETE',
         });
     }
 
-    async getServiceAddress(resourceName, portType) {
+    async getServiceAddress(resourceName: string, portType: string) {
         const url = this.getServiceClientUrl(resourceName, portType);
 
-        return await this._sendGET(url);
+        return await this._sendGET<string>(url);
     }
 
-    async getResourceInfo(resourceType, portType, resourceName) {
+    async getResourceInfo(resourceType: string, portType: string, resourceName: string) {
         const url = this.getResourceInfoUrl(resourceType, portType, resourceName);
 
-        return await this._sendGET(url);
+        return await this._sendGET<string>(url);
+    }
+
+    async getInstanceProviderUrl(instanceId: string, portType: string, resourceName: string) {
+        const url = this.getInstanceProviderHostUrl(instanceId, portType, resourceName);
+
+        return await this._sendGET<string>(url);
+    }
+
+    async getInstanceHost(instanceId: string) {
+        const url = this.getInstanceHostUrl(instanceId);
+
+        return await this._sendGET<string>(url);
     }
 
     async getInstanceConfig() {
         const url = this.getInstanceConfigUrl();
 
-        return await this._sendGET(url);
+        return await this._sendGET<any>(url);
     }
 
     async load() {
-        await this.getClusterConfig();
-
+        this.getClusterConfig();
     }
 
-    getProviderId() {
+    getProviderId(): string {
         return this.getClusterServiceBaseUrl();
     }
 
@@ -185,18 +198,32 @@ class LocalConfigProvider extends AbstractConfigProvider {
         return this.getClusterServiceBaseUrl() + subPath;
     }
 
-    getProviderPort(serviceType) {
+    getProviderPort(serviceType: string) {
         const subPath = `/provides/${this.encode(serviceType)}`;
         return this.getConfigBaseUrl() + subPath;
     }
 
-    getServiceClientUrl(resourceName, serviceType) {
+    getServiceClientUrl(resourceName: string, serviceType: string) {
         const subPath = `/consumes/${this.encode(resourceName)}/${this.encode(serviceType)}`;
         return this.getConfigBaseUrl() + subPath;
     }
 
-    getResourceInfoUrl(operatorType, portType, resourceName) {
-        const subPath = `/consumes/resource/${this.encode(operatorType)}/${this.encode(portType)}/${this.encode(resourceName)}`;
+    getResourceInfoUrl(operatorType: string, portType: string, resourceName: string) {
+        const subPath = `/consumes/resource/${this.encode(operatorType)}/${this.encode(portType)}/${this.encode(
+            resourceName
+        )}`;
+        return this.getConfigBaseUrl() + subPath;
+    }
+
+    getInstanceHostUrl(instanceId: string) {
+        const subPath = `/instances/${this.encode(instanceId)}`;
+        return this.getConfigBaseUrl() + subPath;
+    }
+
+    getInstanceProviderHostUrl(instanceId: string, portType: string, resourceName: string) {
+        const subPath = `/instances/${this.encode(instanceId)}/provider/${this.encode(portType)}/${this.encode(
+            resourceName
+        )}`;
         return this.getConfigBaseUrl() + subPath;
     }
 
@@ -205,23 +232,17 @@ class LocalConfigProvider extends AbstractConfigProvider {
         return this.getConfigBaseUrl() + subPath;
     }
 
-    encode(text) {
-        return encodeURIComponent(text.toLowerCase())
+    encode(text: string) {
+        return encodeURIComponent(text.toLowerCase());
     }
-
-
 
     /**
      * Send GET HTTP request to url
-     *
-     * @param url
-     * @return {Promise<any>}
-     * @protected
      */
-    _sendGET(url) {
+    private _sendGET<T>(url: string): Promise<T> {
         const opts = {
             headers: {},
-            url: url
+            url: url,
         };
 
         return this._sendRequest(opts);
@@ -229,13 +250,8 @@ class LocalConfigProvider extends AbstractConfigProvider {
 
     /**
      * Send GET HTTP request to url
-     *
-     * @param url
-     * @return {Promise<any>}
-     * @protected
      */
-    _sendRequest(opts) {
-
+    private _sendRequest<T>(opts: RequestOptions): Promise<T> {
         if (!opts.headers) {
             opts.headers = {};
         }
@@ -248,7 +264,6 @@ class LocalConfigProvider extends AbstractConfigProvider {
         opts.headers[HEADER_KAPETA_SYSTEM] = this.getSystemId();
         opts.headers[HEADER_KAPETA_INSTANCE] = this.getInstanceId();
 
-
         return new Promise((resolve, reject) => {
             Request(opts, (err, response, body) => {
                 if (err) {
@@ -257,6 +272,7 @@ class LocalConfigProvider extends AbstractConfigProvider {
                 }
 
                 if (response.statusCode > 399) {
+                    console.warn('Request failed: ' + opts.url + ' - Status: ' + response.statusCode, body);
                     reject(new Error('Request failed: ' + opts.url + ' - Status: ' + response.statusCode));
                     return;
                 }
@@ -279,15 +295,11 @@ class LocalConfigProvider extends AbstractConfigProvider {
                         resolve(body);
                         break;
                 }
-
             });
         });
     }
 
-    getConfiguration(path, defaultValue) {
+    public getConfiguration<T>(path: string, defaultValue?: T): T {
         return _.get(this._configuration, path, defaultValue);
     }
 }
-
-
-module.exports = LocalConfigProvider;
