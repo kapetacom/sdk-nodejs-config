@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/kapetacom/sdk-nodejs-config/compare/v1.0.1...v1.0.2) (2023-06-09)
+
+
+### Bug Fixes
+
+* Return type for resource info was wrong ([cef2b2d](https://github.com/kapetacom/sdk-nodejs-config/commit/cef2b2dccdbde91d4b3fff1c72c44d67f67b7a43))
+
 ## [1.0.1](https://github.com/kapetacom/sdk-nodejs-config/compare/v1.0.0...v1.0.1) (2023-06-09)
 
 
