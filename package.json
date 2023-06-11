@@ -2,7 +2,7 @@
     "name": "@kapeta/sdk-config",
     "version": "1.0.3",
     "description": "Config API for Kapeta SDK",
-    "type": "module",
+    "type": "commonjs",
     "exports": {
         ".": {
             "import": {
