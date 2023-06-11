@@ -1,3 +1,10 @@
+## [1.0.4](https://github.com/kapetacom/sdk-nodejs-config/compare/v1.0.3...v1.0.4) (2023-06-11)
+
+
+### Bug Fixes
+
+* Default to commonjs ([08d2202](https://github.com/kapetacom/sdk-nodejs-config/commit/08d2202e425fee05faa0bf8a16c4cf4bc93d9c21))
+
 ## [1.0.3](https://github.com/kapetacom/sdk-nodejs-config/compare/v1.0.2...v1.0.3) (2023-06-09)
 
 
