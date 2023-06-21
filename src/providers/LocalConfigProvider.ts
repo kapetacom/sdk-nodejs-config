@@ -55,6 +55,10 @@ export class LocalConfigProvider extends AbstractConfigProvider {
         const url = this.getIdentityUrl();
         const identity = await this._sendGET<Identity>(url);
 
+        if (!identity) {
+            throw new Error('Failed to resolve identity');
+        }
+
         console.log(
             'Identity resolved: \n - System ID: %s\n - Instance ID: %s',
             identity.systemId,
@@ -88,7 +92,13 @@ export class LocalConfigProvider extends AbstractConfigProvider {
 
         const url = this.getProviderPort(portType);
 
-        return await this._sendGET<string>(url);
+        const port = await this._sendGET<string>(url);
+
+        if (!port) {
+            throw new Error(`Failed to resolve server port for type "${portType}"`);
+        }
+
+        return port;
     }
 
     async getServerHost() {
@@ -216,15 +226,17 @@ export class LocalConfigProvider extends AbstractConfigProvider {
     }
 
     getInstanceHostUrl(instanceId: string) {
-        const subPath = `/instances/${this.encode(instanceId)}`;
-        return this.getConfigBaseUrl() + subPath;
+        const subPath = [this.getSystemId(), instanceId, 'address', 'public'].map((v) => this.encode(v)).join('/');
+
+        return this.getInstanceUrl() + '/' + subPath;
     }
 
     getInstanceProviderHostUrl(instanceId: string, portType: string, resourceName: string) {
-        const subPath = `/instances/${this.encode(instanceId)}/provider/${this.encode(portType)}/${this.encode(
-            resourceName
-        )}`;
-        return this.getConfigBaseUrl() + subPath;
+        const subPath = [this.getSystemId(), instanceId, 'provider', portType, resourceName, 'address', 'public']
+            .map((v) => this.encode(v))
+            .join('/');
+
+        return this.getInstanceUrl() + '/' + subPath;
     }
 
     getIdentityUrl() {
@@ -239,7 +251,7 @@ export class LocalConfigProvider extends AbstractConfigProvider {
     /**
      * Send GET HTTP request to url
      */
-    private _sendGET<T>(url: string): Promise<T> {
+    private _sendGET<T>(url: string): Promise<T | null> {
         const opts = {
             headers: {},
             url: url,
@@ -251,7 +263,7 @@ export class LocalConfigProvider extends AbstractConfigProvider {
     /**
      * Send GET HTTP request to url
      */
-    private _sendRequest<T>(opts: RequestOptions): Promise<T> {
+    private _sendRequest<T>(opts: RequestOptions): Promise<T | null> {
         if (!opts.headers) {
             opts.headers = {};
         }
@@ -268,6 +280,11 @@ export class LocalConfigProvider extends AbstractConfigProvider {
             Request(opts, (err, response, body) => {
                 if (err) {
                     reject(err);
+                    return;
+                }
+
+                if (response.statusCode === 404) {
+                    resolve(null);
                     return;
                 }
 

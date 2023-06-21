@@ -1,30 +1,26 @@
 ## [1.0.4](https://github.com/kapetacom/sdk-nodejs-config/compare/v1.0.3...v1.0.4) (2023-06-11)
 
-
 ### Bug Fixes
 
-* Default to commonjs ([08d2202](https://github.com/kapetacom/sdk-nodejs-config/commit/08d2202e425fee05faa0bf8a16c4cf4bc93d9c21))
+-   Default to commonjs ([08d2202](https://github.com/kapetacom/sdk-nodejs-config/commit/08d2202e425fee05faa0bf8a16c4cf4bc93d9c21))
 
 ## [1.0.3](https://github.com/kapetacom/sdk-nodejs-config/compare/v1.0.2...v1.0.3) (2023-06-09)
 
-
 ### Bug Fixes
 
-* Supprt mixed modules ([30a96d9](https://github.com/kapetacom/sdk-nodejs-config/commit/30a96d952227948c4d96ed2238374d60e483c9c8))
+-   Supprt mixed modules ([30a96d9](https://github.com/kapetacom/sdk-nodejs-config/commit/30a96d952227948c4d96ed2238374d60e483c9c8))
 
 ## [1.0.2](https://github.com/kapetacom/sdk-nodejs-config/compare/v1.0.1...v1.0.2) (2023-06-09)
 
-
 ### Bug Fixes
 
-* Return type for resource info was wrong ([cef2b2d](https://github.com/kapetacom/sdk-nodejs-config/commit/cef2b2dccdbde91d4b3fff1c72c44d67f67b7a43))
+-   Return type for resource info was wrong ([cef2b2d](https://github.com/kapetacom/sdk-nodejs-config/commit/cef2b2dccdbde91d4b3fff1c72c44d67f67b7a43))
 
 ## [1.0.1](https://github.com/kapetacom/sdk-nodejs-config/compare/v1.0.0...v1.0.1) (2023-06-09)
 
-
 ### Bug Fixes
 
-* Add README ([1e5bde1](https://github.com/kapetacom/sdk-nodejs-config/commit/1e5bde178ae21d80c3c9d502b24f21a13964e198))
+-   Add README ([1e5bde1](https://github.com/kapetacom/sdk-nodejs-config/commit/1e5bde178ae21d80c3c9d502b24f21a13964e198))
 
 # 1.0.0 (2023-06-09)
 

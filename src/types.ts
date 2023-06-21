@@ -60,22 +60,22 @@ export interface ConfigProvider {
      * @param {string} serviceName
      * @param {string} portType E.g. "web" or "rest"
      */
-    getServiceAddress(serviceName: string, portType: string): Promise<string>;
+    getServiceAddress(serviceName: string, portType: string): Promise<string | null>;
 
     /**
      * Get resource info for given resource type, port type and resource name
      */
-    getResourceInfo(resourceType: string, portType: string, resourceName: string): Promise<ResourceInfo>;
+    getResourceInfo(resourceType: string, portType: string, resourceName: string): Promise<ResourceInfo | null>;
 
     /**
      * Get base url for instance and resource
      */
-    getInstanceProviderUrl(instanceId: string, portType: string, resourceName: string): Promise<string>;
+    getInstanceProviderUrl(instanceId: string, portType: string, resourceName: string): Promise<string | null>;
 
     /**
      * Get hostname and port for instance
      */
-    getInstanceHost(instanceId: string): Promise<string>;
+    getInstanceHost(instanceId: string): Promise<string | null>;
 
     /**
      * Get host for current process
