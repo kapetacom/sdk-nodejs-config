@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/kapetacom/sdk-nodejs-config/compare/v1.0.4...v1.1.0) (2023-06-21)
+
+
+### Features
+
+* Implemented proper support for getting public address of instances ([#6](https://github.com/kapetacom/sdk-nodejs-config/issues/6)) ([ffd6525](https://github.com/kapetacom/sdk-nodejs-config/commit/ffd65250ba1d9334c1c306744c1a85cc5c9066a8))
+
 ## [1.0.4](https://github.com/kapetacom/sdk-nodejs-config/compare/v1.0.3...v1.0.4) (2023-06-11)
 
 ### Bug Fixes
