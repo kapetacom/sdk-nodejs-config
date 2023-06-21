@@ -40,17 +40,21 @@ export abstract class AbstractConfigProvider implements ConfigProvider {
 
     abstract getConfiguration<T>(path: string, defaultValue?: T): T | undefined;
 
-    abstract getInstanceHost(instanceId: string): Promise<string>;
+    abstract getInstanceHost(instanceId: string): Promise<string | null>;
 
-    abstract getInstanceProviderUrl(instanceId: string, portType: string, resourceName: string): Promise<string>;
+    abstract getInstanceProviderUrl(instanceId: string, portType: string, resourceName: string): Promise<string | null>;
 
     abstract getProviderId(): string;
 
-    abstract getResourceInfo(resourceType: string, portType: string, resourceName: string): Promise<ResourceInfo>;
+    abstract getResourceInfo(
+        resourceType: string,
+        portType: string,
+        resourceName: string
+    ): Promise<ResourceInfo | null>;
 
     abstract getServerHost(): Promise<string>;
 
     abstract getServerPort(portType?: string): Promise<string>;
 
-    abstract getServiceAddress(serviceName: string, portType: string): Promise<string>;
+    abstract getServiceAddress(serviceName: string, portType: string): Promise<string | null>;
 }

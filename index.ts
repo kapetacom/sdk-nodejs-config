@@ -39,9 +39,8 @@ class Config {
     /**
      * Provide callback for when configuration is ready.
      *
-     * @param {(provider:AbstractConfigProvider) => {}} callback
      */
-    static onReady(callback: (provider: ConfigProvider) => {}) {
+    static onReady(callback: (provider: ConfigProvider) => {}): void {
         if (CONFIG.PROVIDER) {
             callback(CONFIG.PROVIDER);
             return;
@@ -50,15 +49,14 @@ class Config {
         CONFIG.CALLBACKS.push(callback);
     }
 
-    static isReady() {
+    static isReady(): boolean {
         return !!CONFIG.PROVIDER;
     }
 
     /**
      * Get provider - if not ready, will throw an error
-     * @return {ConfigProvider}
      */
-    static getProvider() {
+    static getProvider(): ConfigProvider {
         if (!CONFIG.PROVIDER) {
             throw new Error('Configuration not yet initialised');
         }
@@ -67,35 +65,31 @@ class Config {
 
     /**
      * Get configuration value
-     *
-     * @param {string} path
-     * @param {any} defaultValue
-     * @return {any}
      */
     static get<T>(path: string, defaultValue?: T): T | undefined {
         return Config.getProvider().getConfiguration(path, defaultValue);
     }
 
-    static getAsInstanceHost(path: string, defaultValue?: string) {
+    static async getAsInstanceHost(path: string, defaultValue?: string): Promise<string | null> {
         /**
          *
          * @type {InstanceValue}
          */
         const instance = Config.get<InstanceValue>(path);
         if (!instance) {
-            return defaultValue;
+            return defaultValue ?? null;
         }
         return Config.getInstanceHost(instance.id);
     }
 
-    static getAsInstanceProvider(path: string, defaultValue: string) {
+    static async getAsInstanceProvider(path: string, defaultValue: string): Promise<string | null> {
         /**
          *
          * @type {InstanceProviderValue}
          */
         const instanceProvider = Config.get<InstanceProviderValue>(path);
         if (!instanceProvider) {
-            return defaultValue;
+            return defaultValue ?? null;
         }
         return Config.getInstanceProviderUrl(
             instanceProvider.id,
@@ -107,27 +101,21 @@ class Config {
     /**
      * Get base url for instance and resource
      */
-    static async getInstanceProviderUrl(instanceId: string, portType: string, resourceName: string) {
+    static getInstanceProviderUrl(instanceId: string, portType: string, resourceName: string): Promise<string | null> {
         return Config.getProvider().getInstanceProviderUrl(instanceId, portType, resourceName);
     }
 
     /**
      * Get hostname and port for instance
      */
-    static getInstanceHost(instanceId: string) {
+    static getInstanceHost(instanceId: string): Promise<string | null> {
         return Config.getProvider().getInstanceHost(instanceId);
     }
 
     /**
      * Inits and loads config provider
-     *
-     * @param {string} blockDir
-     * @param {string} healthEndpoint
-     * @param {string} [portType="rest"]
-     *
-     * @return {Promise<ConfigProvider>}
      */
-    static async init(blockDir: string, healthEndpoint: string, portType: string = 'rest') {
+    static async init(blockDir: string, healthEndpoint: string, portType: string = 'rest'): Promise<ConfigProvider> {
         if (CONFIG.PROVIDER) {
             throw new Error('Configuration already initialised once');
         }
