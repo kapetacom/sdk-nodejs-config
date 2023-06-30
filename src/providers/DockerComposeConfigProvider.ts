@@ -16,6 +16,7 @@ function toEnvName(name: string) {
  */
 class DockerComposeConfigProvider extends AbstractConfigProvider {
     private _configuration: any;
+    private _instanceHosts: any;
     /**
      *
      * @param {string} blockRef
@@ -171,10 +172,27 @@ class DockerComposeConfigProvider extends AbstractConfigProvider {
     }
 
     async getInstanceHost(instanceId: string): Promise<string> {
-        throw new Error('Method not implemented.');
+        if (!this._instanceHosts) {
+            if (process.env.KAPETA_BLOCK_HOSTS) {
+                try {
+                    this._instanceHosts = JSON.parse(process.env.KAPETA_BLOCK_HOSTS);
+                } catch (e) {
+                    throw new Error(`Invalid JSON in environment variable: KAPETA_BLOCK_HOSTS`);
+                }
+            } else {
+                throw new Error('Environment variable KAPETA_BLOCK_HOSTS not found. Could not resolve instance host');
+            }
+        }
+
+        if (instanceId in this._instanceHosts) {
+            return this._instanceHosts[instanceId];
+        }
+
+        throw new Error(`Unknown instance id when resolving host: ${instanceId}.`);
     }
 
     async getInstanceProviderUrl(instanceId: string, portType: string, resourceName: string): Promise<string> {
+        //TODO: Implement this (KAP-764)
         throw new Error('Method not implemented.');
     }
 }

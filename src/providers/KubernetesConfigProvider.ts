@@ -15,6 +15,7 @@ function toEnvName(name: string) {
  */
 export class KubernetesConfigProvider extends AbstractConfigProvider {
     private _configuration: any;
+    private _instanceHosts: any;
 
     /**
      *
@@ -105,11 +106,28 @@ export class KubernetesConfigProvider extends AbstractConfigProvider {
         return _.get(this._configuration, path, defaultValue);
     }
 
-    getInstanceHost(instanceId: string): Promise<string> {
-        throw new Error('Method not implemented.');
+    async getInstanceHost(instanceId: string): Promise<string> {
+        if (!this._instanceHosts) {
+            if (process.env.KAPETA_BLOCK_HOSTS) {
+                try {
+                    this._instanceHosts = JSON.parse(process.env.KAPETA_BLOCK_HOSTS);
+                } catch (e) {
+                    throw new Error(`Invalid JSON in environment variable: KAPETA_BLOCK_HOSTS`);
+                }
+            } else {
+                throw new Error('Environment variable KAPETA_BLOCK_HOSTS not found. Could not resolve instance host');
+            }
+        }
+
+        if (instanceId in this._instanceHosts) {
+            return this._instanceHosts[instanceId];
+        }
+
+        throw new Error(`Unknown instance id when resolving host: ${instanceId}.`);
     }
 
-    getInstanceProviderUrl(instanceId: string, portType: string, resourceName: string): Promise<string> {
+    async getInstanceProviderUrl(instanceId: string, portType: string, resourceName: string): Promise<string> {
+        //TODO: Implement this (KAP-764)
         throw new Error('Method not implemented.');
     }
 }
