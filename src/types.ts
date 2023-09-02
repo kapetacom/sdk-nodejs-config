@@ -24,7 +24,6 @@ export interface ResourceInfo {
     credentials?: {
         [key: string]: string;
     };
-    replicaSet?: string;
 }
 
 export interface ConfigProvider {
