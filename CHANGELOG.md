@@ -1,3 +1,10 @@
+## [1.1.2](https://github.com/kapetacom/sdk-nodejs-config/compare/v1.1.1...v1.1.2) (2023-09-02)
+
+
+### Bug Fixes
+
+* adding replicaSet to ResourceInfo ([46b10b2](https://github.com/kapetacom/sdk-nodejs-config/commit/46b10b2c5bb81dbce271026d50e0c03f99774124))
+
 ## [1.1.1](https://github.com/kapetacom/sdk-nodejs-config/compare/v1.1.0...v1.1.1) (2023-06-30)
 
 
