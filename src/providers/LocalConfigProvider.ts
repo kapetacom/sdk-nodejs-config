@@ -90,7 +90,7 @@ export class LocalConfigProvider extends AbstractConfigProvider {
             return process.env[`KAPETA_LOCAL_SERVER_PORT_${portType.toUpperCase()}`]!;
         }
 
-        const url = this.getProviderPort(portType);
+        const url = this.getProviderPortUrl(portType);
 
         const port = await this._sendGET<string>(url);
 
@@ -193,45 +193,45 @@ export class LocalConfigProvider extends AbstractConfigProvider {
         return KapetaClusterConfig.getClusterServiceAddress();
     }
 
-    getInstanceUrl() {
+    private getInstanceUrl() {
         const subPath = `/instances`;
         return this.getClusterServiceBaseUrl() + subPath;
     }
 
-    getInstanceConfigUrl() {
+    private getInstanceConfigUrl() {
         const subPath = `/config/instance`;
         return this.getClusterServiceBaseUrl() + subPath;
     }
 
-    getConfigBaseUrl() {
+    private getConfigBaseUrl() {
         const subPath = `/config`;
         return this.getClusterServiceBaseUrl() + subPath;
     }
 
-    getProviderPort(serviceType: string) {
+    private getProviderPortUrl(serviceType: string) {
         const subPath = `/provides/${this.encode(serviceType)}`;
         return this.getConfigBaseUrl() + subPath;
     }
 
-    getServiceClientUrl(resourceName: string, serviceType: string) {
+    private getServiceClientUrl(resourceName: string, serviceType: string) {
         const subPath = `/consumes/${this.encode(resourceName)}/${this.encode(serviceType)}`;
         return this.getConfigBaseUrl() + subPath;
     }
 
-    getResourceInfoUrl(operatorType: string, portType: string, resourceName: string) {
+    private getResourceInfoUrl(operatorType: string, portType: string, resourceName: string) {
         const subPath = `/consumes/resource/${this.encode(operatorType)}/${this.encode(portType)}/${this.encode(
             resourceName
         )}`;
         return this.getConfigBaseUrl() + subPath;
     }
 
-    getInstanceHostUrl(instanceId: string) {
+    private getInstanceHostUrl(instanceId: string) {
         const subPath = [this.getSystemId(), instanceId, 'address', 'public'].map((v) => this.encode(v)).join('/');
 
         return this.getInstanceUrl() + '/' + subPath;
     }
 
-    getInstanceProviderHostUrl(instanceId: string, portType: string, resourceName: string) {
+    private getInstanceProviderHostUrl(instanceId: string, portType: string, resourceName: string) {
         const subPath = [this.getSystemId(), instanceId, 'provider', portType, resourceName, 'address', 'public']
             .map((v) => this.encode(v))
             .join('/');
@@ -239,12 +239,12 @@ export class LocalConfigProvider extends AbstractConfigProvider {
         return this.getInstanceUrl() + '/' + subPath;
     }
 
-    getIdentityUrl() {
+    private getIdentityUrl() {
         const subPath = `/identity`;
         return this.getConfigBaseUrl() + subPath;
     }
 
-    encode(text: string) {
+    private encode(text: string) {
         return encodeURIComponent(text.toLowerCase());
     }
 
