@@ -159,12 +159,6 @@ export class LocalConfigProvider extends AbstractConfigProvider {
         return await this._sendGET<ResourceInfo>(url);
     }
 
-    async getInstanceProviderUrl(instanceId: string, portType: string, resourceName: string) {
-        const url = this.getInstanceProviderHostUrl(instanceId, portType, resourceName);
-
-        return await this._sendGET<string>(url);
-    }
-
     async getInstanceHost(instanceId: string) {
         const url = this.getInstanceHostUrl(instanceId);
 
@@ -231,13 +225,6 @@ export class LocalConfigProvider extends AbstractConfigProvider {
         return this.getInstanceUrl() + '/' + subPath;
     }
 
-    private getInstanceProviderHostUrl(instanceId: string, portType: string, resourceName: string) {
-        const subPath = [this.getSystemId(), instanceId, 'provider', portType, resourceName, 'address', 'public']
-            .map((v) => this.encode(v))
-            .join('/');
-
-        return this.getInstanceUrl() + '/' + subPath;
-    }
 
     private getIdentityUrl() {
         const subPath = `/identity`;

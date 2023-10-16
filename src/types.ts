@@ -68,11 +68,6 @@ export interface ConfigProvider {
     getResourceInfo(resourceType: string, portType: string, resourceName: string): Promise<ResourceInfo | null>;
 
     /**
-     * Get base url for instance and resource
-     */
-    getInstanceProviderUrl(instanceId: string, portType: string, resourceName: string): Promise<string | null>;
-
-    /**
      * Get hostname and port for instance
      */
     getInstanceHost(instanceId: string): Promise<string | null>;

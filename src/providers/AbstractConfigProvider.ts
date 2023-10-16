@@ -42,8 +42,6 @@ export abstract class AbstractConfigProvider implements ConfigProvider {
 
     abstract getInstanceHost(instanceId: string): Promise<string | null>;
 
-    abstract getInstanceProviderUrl(instanceId: string, portType: string, resourceName: string): Promise<string | null>;
-
     abstract getProviderId(): string;
 
     abstract getResourceInfo(

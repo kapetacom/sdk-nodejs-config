@@ -125,9 +125,4 @@ export class KubernetesConfigProvider extends AbstractConfigProvider {
 
         throw new Error(`Unknown instance id when resolving host: ${instanceId}.`);
     }
-
-    async getInstanceProviderUrl(instanceId: string, portType: string, resourceName: string): Promise<string> {
-        //TODO: Implement this (KAP-764)
-        throw new Error('Method not implemented.');
-    }
 }
