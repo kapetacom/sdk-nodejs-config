@@ -82,29 +82,6 @@ class Config {
         return Config.getInstanceHost(instance.id);
     }
 
-    static async getAsInstanceProvider(path: string, defaultValue: string): Promise<string | null> {
-        /**
-         *
-         * @type {InstanceProviderValue}
-         */
-        const instanceProvider = Config.get<InstanceProviderValue>(path);
-        if (!instanceProvider) {
-            return defaultValue ?? null;
-        }
-        return Config.getInstanceProviderUrl(
-            instanceProvider.id,
-            instanceProvider.portType,
-            instanceProvider.resourceName
-        );
-    }
-
-    /**
-     * Get base url for instance and resource
-     */
-    static getInstanceProviderUrl(instanceId: string, portType: string, resourceName: string): Promise<string | null> {
-        return Config.getProvider().getInstanceProviderUrl(instanceId, portType, resourceName);
-    }
-
     /**
      * Get hostname and port for instance
      */
