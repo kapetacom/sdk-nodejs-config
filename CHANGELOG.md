@@ -1,3 +1,10 @@
+## [1.1.3](https://github.com/kapetacom/sdk-nodejs-config/compare/v1.1.2...v1.1.3) (2023-10-17)
+
+
+### Bug Fixes
+
+* Cleanup ([#10](https://github.com/kapetacom/sdk-nodejs-config/issues/10)) ([18bbdbe](https://github.com/kapetacom/sdk-nodejs-config/commit/18bbdbefe6a11bfad4a6e564f3f4b5e846ef990d))
+
 ## [1.1.2](https://github.com/kapetacom/sdk-nodejs-config/compare/v1.1.1...v1.1.2) (2023-09-02)
 
 
