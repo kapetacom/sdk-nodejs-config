@@ -52,6 +52,16 @@ export class KubernetesConfigProvider extends AbstractConfigProvider {
         return '80'; //We default to port 80
     }
 
+    async getServerHost() {
+        const envVar = `KAPETA_PROVIDER_HOST`;
+        if (envVar in process.env) {
+            return process.env[envVar]!;
+        }
+
+        //Any host within docker container
+        return '0.0.0.0';
+    }
+
     async getServiceAddress(resourceName: string, portType: string) {
         const envVar = `KAPETA_CONSUMER_SERVICE_${toEnvName(resourceName)}_${toEnvName(portType)}`;
         if (envVar in process.env) {
@@ -68,16 +78,6 @@ export class KubernetesConfigProvider extends AbstractConfigProvider {
         }
 
         throw new Error(`Missing environment variable for operator resource: ${envVar}`);
-    }
-
-    async getServerHost() {
-        const envVar = `KAPETA_PROVIDER_HOST`;
-        if (envVar in process.env) {
-            return process.env[envVar]!;
-        }
-
-        //Any host within docker container
-        return '0.0.0.0';
     }
 
     getProviderId() {
@@ -124,10 +124,5 @@ export class KubernetesConfigProvider extends AbstractConfigProvider {
         }
 
         throw new Error(`Unknown instance id when resolving host: ${instanceId}.`);
-    }
-
-    async getInstanceProviderUrl(instanceId: string, portType: string, resourceName: string): Promise<string> {
-        //TODO: Implement this (KAP-764)
-        throw new Error('Method not implemented.');
     }
 }
