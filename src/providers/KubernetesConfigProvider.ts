@@ -1,3 +1,8 @@
+/**
+ * Copyright 2023 Kapeta Inc.
+ * SPDX-License-Identifier: MIT
+ */
+
 import { AbstractConfigProvider } from './AbstractConfigProvider';
 import _ from 'lodash';
 import { ResourceInfo } from '../types';
