@@ -90,5 +90,7 @@ export interface ConfigProvider {
     /**
      * Get configuration value from object path. E.g. "SomeConfig.fieldName"
      */
-    getConfiguration<T>(path: string, defaultValue?: T): T | undefined;
+    getOrDefault<T = any>(path: string, defaultValue: T): T;
+
+    get<T = any>(path: string): T | undefined;
 }

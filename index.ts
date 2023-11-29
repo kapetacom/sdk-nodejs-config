@@ -6,7 +6,7 @@
 import YAML from 'yaml';
 import Path from 'path';
 import FS from 'fs';
-import { ConfigProvider, InstanceProviderValue, InstanceValue } from './src/types';
+import { ConfigProvider, InstanceValue } from './src/types';
 
 import { KubernetesConfigProvider } from './src/providers/KubernetesConfigProvider';
 import { LocalConfigProvider } from './src/providers/LocalConfigProvider';
@@ -71,8 +71,12 @@ class Config {
     /**
      * Get configuration value
      */
-    static get<T>(path: string, defaultValue?: T): T | undefined {
-        return Config.getProvider().getConfiguration(path, defaultValue);
+    static get<T>(path: string): T | undefined {
+        return Config.getProvider().get(path);
+    }
+
+    static getOrDefault<T>(path: string, defaultValue: T): T {
+        return Config.getProvider().getOrDefault(path, defaultValue);
     }
 
     static async getAsInstanceHost(path: string, defaultValue?: string): Promise<string | null> {
@@ -97,7 +101,7 @@ class Config {
     /**
      * Inits and loads config provider
      */
-    static async init(blockDir: string, healthEndpoint: string, portType: string = 'rest'): Promise<ConfigProvider> {
+    static async init(blockDir: string): Promise<ConfigProvider> {
         if (CONFIG.PROVIDER) {
             throw new Error('Configuration already initialised once');
         }
@@ -145,7 +149,7 @@ class Config {
                 const localProvider = await LocalConfigProvider.create(blockRef, systemId, instanceId, blockDefinition);
 
                 //Only relevant locally:
-                await localProvider.registerInstance(healthEndpoint, portType);
+                await localProvider.registerInstance();
 
                 provider = localProvider;
 
@@ -166,6 +170,7 @@ class Config {
     }
 }
 
+export * from './src/helpers';
 export * from './src/types';
 export * from './src/providers/AbstractConfigProvider';
 export * from './src/providers/LocalConfigProvider';

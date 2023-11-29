@@ -117,10 +117,7 @@ export class LocalConfigProvider extends AbstractConfigProvider {
     /**
      * Register instance with cluster service
      */
-    async registerInstance(instanceHealthPath: string, portType: string = 'rest') {
-        if (!portType) {
-            portType = DEFAULT_SERVER_PORT_TYPE;
-        }
+    async registerInstance() {
         const url = this.getInstanceUrl();
         await this._sendRequest({
             url,
@@ -130,8 +127,6 @@ export class LocalConfigProvider extends AbstractConfigProvider {
             },
             body: JSON.stringify({
                 pid: process.pid,
-                health: instanceHealthPath,
-                portType,
             }),
         });
 
@@ -230,7 +225,6 @@ export class LocalConfigProvider extends AbstractConfigProvider {
         return this.getInstanceUrl() + '/' + subPath;
     }
 
-
     private getIdentityUrl() {
         const subPath = `/identity`;
         return this.getConfigBaseUrl() + subPath;
@@ -308,7 +302,11 @@ export class LocalConfigProvider extends AbstractConfigProvider {
         });
     }
 
-    public getConfiguration<T>(path: string, defaultValue?: T): T {
+    public get<T = any>(path: string): T | undefined {
+        return _.get(this._configuration, path);
+    }
+
+    public getOrDefault<T = any>(path: string, defaultValue: T): T {
         return _.get(this._configuration, path, defaultValue);
     }
 }

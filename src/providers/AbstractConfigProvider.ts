@@ -43,8 +43,6 @@ export abstract class AbstractConfigProvider implements ConfigProvider {
         this._instanceId = instanceId;
     }
 
-    abstract getConfiguration<T>(path: string, defaultValue?: T): T | undefined;
-
     abstract getInstanceHost(instanceId: string): Promise<string | null>;
 
     abstract getProviderId(): string;
@@ -60,4 +58,8 @@ export abstract class AbstractConfigProvider implements ConfigProvider {
     abstract getServerPort(portType?: string): Promise<string>;
 
     abstract getServiceAddress(serviceName: string, portType: string): Promise<string | null>;
+
+    abstract get<T = any>(path: string): T | undefined;
+
+    abstract getOrDefault<T = any>(path: string, defaultValue: T): T;
 }

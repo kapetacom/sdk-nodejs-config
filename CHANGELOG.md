@@ -1,23 +1,20 @@
 ## [1.1.3](https://github.com/kapetacom/sdk-nodejs-config/compare/v1.1.2...v1.1.3) (2023-10-17)
 
-
 ### Bug Fixes
 
-* Cleanup ([#10](https://github.com/kapetacom/sdk-nodejs-config/issues/10)) ([18bbdbe](https://github.com/kapetacom/sdk-nodejs-config/commit/18bbdbefe6a11bfad4a6e564f3f4b5e846ef990d))
+-   Cleanup ([#10](https://github.com/kapetacom/sdk-nodejs-config/issues/10)) ([18bbdbe](https://github.com/kapetacom/sdk-nodejs-config/commit/18bbdbefe6a11bfad4a6e564f3f4b5e846ef990d))
 
 ## [1.1.2](https://github.com/kapetacom/sdk-nodejs-config/compare/v1.1.1...v1.1.2) (2023-09-02)
 
-
 ### Bug Fixes
 
-* adding replicaSet to ResourceInfo ([46b10b2](https://github.com/kapetacom/sdk-nodejs-config/commit/46b10b2c5bb81dbce271026d50e0c03f99774124))
+-   adding replicaSet to ResourceInfo ([46b10b2](https://github.com/kapetacom/sdk-nodejs-config/commit/46b10b2c5bb81dbce271026d50e0c03f99774124))
 
 ## [1.1.1](https://github.com/kapetacom/sdk-nodejs-config/compare/v1.1.0...v1.1.1) (2023-06-30)
 
-
 ### Bug Fixes
 
-* Implemented the ability to get public host in k8s and docker compose ([#7](https://github.com/kapetacom/sdk-nodejs-config/issues/7)) ([f43587b](https://github.com/kapetacom/sdk-nodejs-config/commit/f43587b24adf672f7e506222fbdd4411b4a3d5e3))
+-   Implemented the ability to get public host in k8s and docker compose ([#7](https://github.com/kapetacom/sdk-nodejs-config/issues/7)) ([f43587b](https://github.com/kapetacom/sdk-nodejs-config/commit/f43587b24adf672f7e506222fbdd4411b4a3d5e3))
 
 # [1.1.0](https://github.com/kapetacom/sdk-nodejs-config/compare/v1.0.4...v1.1.0) (2023-06-21)
 

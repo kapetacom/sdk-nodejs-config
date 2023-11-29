@@ -154,7 +154,7 @@ class DockerComposeConfigProvider extends AbstractConfigProvider {
         return 'docker-compose';
     }
 
-    getConfiguration<T>(path: string, defaultValue?: T): T | undefined {
+    private getConfiguration<T>(path: string, defaultValue?: T): T | undefined {
         if (!this._configuration) {
             const envVar = `KAPETA_INSTANCE_CONFIG`;
             if (envVar in process.env) {
@@ -174,6 +174,14 @@ class DockerComposeConfigProvider extends AbstractConfigProvider {
         }
 
         return _.get(this._configuration, path, defaultValue);
+    }
+
+    public get<T = any>(path: string): T | undefined {
+        return this.getConfiguration(path);
+    }
+
+    public getOrDefault<T = any>(path: string, defaultValue: T): T {
+        return this.getConfiguration(path, defaultValue) as T;
     }
 
     async getInstanceHost(instanceId: string): Promise<string> {
