@@ -1,3 +1,15 @@
+# [2.0.0](https://github.com/kapetacom/sdk-nodejs-config/compare/v1.1.3...v2.0.0) (2023-12-12)
+
+
+### Features
+
+* Simplify API and add support for getting typed config objects ([#12](https://github.com/kapetacom/sdk-nodejs-config/issues/12)) ([3b6086e](https://github.com/kapetacom/sdk-nodejs-config/commit/3b6086ef4c8fc05b249941aa7c810cbf28cdd321))
+
+
+### BREAKING CHANGES
+
+* Removed health endpoint reporting
+
 ## [1.1.3](https://github.com/kapetacom/sdk-nodejs-config/compare/v1.1.2...v1.1.3) (2023-10-17)
 
 ### Bug Fixes
