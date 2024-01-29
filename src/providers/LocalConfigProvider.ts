@@ -8,7 +8,15 @@ import _ from 'lodash';
 import * as YAML from 'yaml';
 import KapetaClusterConfig from '@kapeta/local-cluster-config';
 import { AbstractConfigProvider } from './AbstractConfigProvider';
-import { Identity, ResourceInfo } from '../types';
+import {
+    BlockInstanceDetails,
+    DefaultCredentials,
+    DefaultResourceOptions,
+    Identity,
+    InstanceOperator,
+    ResourceInfo
+} from '../types';
+import {BlockDefinition} from '@kapeta/schemas';
 
 type RequestOptions = Request.CoreOptions & Request.RequiredUriUrl & Request.UrlOptions & Request.OptionsWithUrl;
 
@@ -52,9 +60,8 @@ export class LocalConfigProvider extends AbstractConfigProvider {
 
     /**
      * Resolve and verify system and instance id
-     * @returns {Promise<void>}
      */
-    async resolveIdentity() {
+    public async resolveIdentity() {
         console.log('Resolving identity for block: %s', this.getBlockReference());
 
         const url = this.getIdentityUrl();
@@ -75,7 +82,7 @@ export class LocalConfigProvider extends AbstractConfigProvider {
         await this.loadConfiguration();
     }
 
-    async loadConfiguration() {
+    public async loadConfiguration() {
         this._configuration = await this.getInstanceConfig();
         if (!this._configuration) {
             this._configuration = {};
@@ -86,7 +93,7 @@ export class LocalConfigProvider extends AbstractConfigProvider {
      * Get port to listen on for current instance
      *
      */
-    async getServerPort(portType: string = 'rest'): Promise<string> {
+    public async getServerPort(portType: string = 'rest'): Promise<string> {
         if (!portType) {
             portType = DEFAULT_SERVER_PORT_TYPE;
         }
@@ -106,7 +113,7 @@ export class LocalConfigProvider extends AbstractConfigProvider {
         return port;
     }
 
-    async getServerHost() {
+    public async getServerHost() {
         if (process.env[`KAPETA_LOCAL_SERVER`]) {
             return process.env[`KAPETA_LOCAL_SERVER`];
         }
@@ -117,7 +124,7 @@ export class LocalConfigProvider extends AbstractConfigProvider {
     /**
      * Register instance with cluster service
      */
-    async registerInstance() {
+    public async registerInstance() {
         const url = this.getInstanceUrl();
         await this._sendRequest({
             url,
@@ -139,7 +146,7 @@ export class LocalConfigProvider extends AbstractConfigProvider {
         process.on('SIGTERM', exitHandler);
     }
 
-    async instanceStopped() {
+    public async instanceStopped() {
         const url = this.getInstanceUrl();
         return this._sendRequest({
             url,
@@ -147,29 +154,42 @@ export class LocalConfigProvider extends AbstractConfigProvider {
         });
     }
 
-    async getServiceAddress(resourceName: string, portType: string) {
+    public async getServiceAddress(resourceName: string, portType: string) {
         const url = this.getServiceClientUrl(resourceName, portType);
 
         return await this._sendGET<string>(url);
     }
 
-    async getResourceInfo(resourceType: string, portType: string, resourceName: string) {
+    public async getResourceInfo<Options = DefaultResourceOptions, Credentials = DefaultCredentials>(resourceType: string, portType: string, resourceName: string) {
         const url = this.getResourceInfoUrl(resourceType, portType, resourceName);
 
-        return await this._sendGET<ResourceInfo>(url);
+        return await this._sendGET<ResourceInfo<Options, Credentials>>(url);
     }
 
-    async getInstanceHost(instanceId: string) {
+    public async getInstanceHost(instanceId: string) {
         const url = this.getInstanceHostUrl(instanceId);
 
         return await this._sendGET<string>(url);
     }
 
-    async getInstanceConfig() {
+    public async getInstanceConfig() {
         const url = this.getInstanceConfigUrl();
 
         return await this._sendGET<any>(url);
     }
+
+    public async getInstanceOperator<Options = any, Credentials = DefaultCredentials>(instanceId: string): Promise<InstanceOperator<Options, Credentials> | null> {
+        throw new Error('Method not implemented.');
+    }
+
+    public async getInstanceForConsumer<BlockType = BlockDefinition>(resourceName: string): Promise<BlockInstanceDetails<BlockType> | null> {
+        throw new Error('Method not implemented.');
+    }
+
+    public async getInstancesForProvider<BlockType = BlockDefinition>(resourceName: string): Promise<BlockInstanceDetails<BlockType>[]> {
+        throw new Error('Method not implemented.');
+    }
+
 
     async load() {
         this.getClusterConfig();

@@ -5,7 +5,14 @@
 
 import { AbstractConfigProvider } from './AbstractConfigProvider';
 import _ from 'lodash';
-import { ResourceInfo } from '../types';
+import {
+    BlockInstanceDetails,
+    DefaultCredentials,
+    DefaultResourceOptions,
+    InstanceOperator,
+    ResourceInfo
+} from '../types';
+import {BlockDefinition} from "@kapeta/schemas";
 
 const DEFAULT_SERVER_PORT_TYPE = 'rest';
 
@@ -76,13 +83,25 @@ export class KubernetesConfigProvider extends AbstractConfigProvider {
         throw new Error(`Missing environment variable for internal resource: ${envVar}`);
     }
 
-    async getResourceInfo(resourceType: string, portType: string, resourceName: string) {
+    async getResourceInfo<Options = DefaultResourceOptions, Credentials = DefaultCredentials>(resourceType: string, portType: string, resourceName: string) {
         const envVar = `KAPETA_CONSUMER_RESOURCE_${toEnvName(resourceName)}_${toEnvName(portType)}`;
         if (envVar in process.env) {
-            return JSON.parse(process.env[envVar]!) as ResourceInfo;
+            return JSON.parse(process.env[envVar]!) as ResourceInfo<Options, Credentials>;
         }
 
         throw new Error(`Missing environment variable for operator resource: ${envVar}`);
+    }
+
+    public async getInstanceOperator<Options = any, Credentials = DefaultCredentials>(instanceId: string): Promise<InstanceOperator<Options, Credentials> | null> {
+        throw new Error('Method not implemented.');
+    }
+
+    public async getInstanceForConsumer<BlockType = BlockDefinition>(resourceName: string): Promise<BlockInstanceDetails<BlockType> | null> {
+        throw new Error('Method not implemented.');
+    }
+
+    public async getInstancesForProvider<BlockType = BlockDefinition>(resourceName: string): Promise<BlockInstanceDetails<BlockType>[]> {
+        throw new Error('Method not implemented.');
     }
 
     getProviderId() {

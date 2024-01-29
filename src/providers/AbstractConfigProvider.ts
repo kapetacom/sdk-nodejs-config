@@ -3,7 +3,17 @@
  * SPDX-License-Identifier: MIT
  */
 
-import { ConfigProvider, ResourceInfo } from '../types';
+import {
+    BlockInstanceDetails,
+    ConfigProvider,
+    DefaultCredentials,
+    DefaultResourceOptions,
+    InstanceOperator,
+    ResourceInfo
+} from '../types';
+
+import {BlockDefinition} from "@kapeta/schemas";
+
 
 /**
  * Base class for config providers
@@ -47,11 +57,11 @@ export abstract class AbstractConfigProvider implements ConfigProvider {
 
     abstract getProviderId(): string;
 
-    abstract getResourceInfo(
+    abstract getResourceInfo<Options = DefaultResourceOptions, Credentials = DefaultCredentials>(
         resourceType: string,
         portType: string,
         resourceName: string
-    ): Promise<ResourceInfo | null>;
+    ): Promise<ResourceInfo<Options, Credentials> | null>;
 
     abstract getServerHost(): Promise<string>;
 
@@ -62,4 +72,10 @@ export abstract class AbstractConfigProvider implements ConfigProvider {
     abstract get<T = any>(path: string): T | undefined;
 
     abstract getOrDefault<T = any>(path: string, defaultValue: T): T;
+
+    abstract getInstanceForConsumer<BlockType = BlockDefinition>(resourceName: string): Promise<BlockInstanceDetails<BlockType> | null>;
+
+    abstract getInstanceOperator<Options = any, Credentials = DefaultCredentials>(instanceId: string): Promise<InstanceOperator<Options, Credentials> | null>;
+
+    abstract getInstancesForProvider<BlockType = BlockDefinition>(resourceName: string): Promise<BlockInstanceDetails<BlockType>[]>;
 }
