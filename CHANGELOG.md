@@ -1,3 +1,10 @@
+# [2.1.0](https://github.com/kapetacom/sdk-nodejs-config/compare/v2.0.0...v2.1.0) (2024-01-31)
+
+
+### Features
+
+* Adds methods for getting connected instances ([#13](https://github.com/kapetacom/sdk-nodejs-config/issues/13)) ([c1aeea4](https://github.com/kapetacom/sdk-nodejs-config/commit/c1aeea4570040ef10c9f4ef4d357d1b7e8b59200))
+
 # [2.0.0](https://github.com/kapetacom/sdk-nodejs-config/compare/v1.1.3...v2.0.0) (2023-12-12)
 
 
