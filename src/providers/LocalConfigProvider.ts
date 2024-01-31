@@ -8,7 +8,15 @@ import _ from 'lodash';
 import * as YAML from 'yaml';
 import KapetaClusterConfig from '@kapeta/local-cluster-config';
 import { AbstractConfigProvider } from './AbstractConfigProvider';
-import { Identity, ResourceInfo } from '../types';
+import {
+    BlockInstanceDetails,
+    DefaultCredentials,
+    DefaultResourceOptions,
+    Identity,
+    InstanceOperator,
+    ResourceInfo
+} from '../types';
+import {BlockDefinition, Plan} from '@kapeta/schemas';
 
 type RequestOptions = Request.CoreOptions & Request.RequiredUriUrl & Request.UrlOptions & Request.OptionsWithUrl;
 
@@ -18,6 +26,10 @@ const HEADER_KAPETA_SYSTEM = 'X-Kapeta-System';
 const HEADER_KAPETA_INSTANCE = 'X-Kapeta-Instance';
 const HEADER_KAPETA_ENVIRONMENT = 'X-Kapeta-Environment';
 const DEFAULT_SERVER_PORT_TYPE = 'rest';
+
+interface AssetWrapper<T> {
+    data:T
+}
 
 /**
  * Local config provider - used when running local kapeta clusters during development and testing.
@@ -52,9 +64,8 @@ export class LocalConfigProvider extends AbstractConfigProvider {
 
     /**
      * Resolve and verify system and instance id
-     * @returns {Promise<void>}
      */
-    async resolveIdentity() {
+    public async resolveIdentity() {
         console.log('Resolving identity for block: %s', this.getBlockReference());
 
         const url = this.getIdentityUrl();
@@ -75,7 +86,7 @@ export class LocalConfigProvider extends AbstractConfigProvider {
         await this.loadConfiguration();
     }
 
-    async loadConfiguration() {
+    public async loadConfiguration() {
         this._configuration = await this.getInstanceConfig();
         if (!this._configuration) {
             this._configuration = {};
@@ -86,7 +97,7 @@ export class LocalConfigProvider extends AbstractConfigProvider {
      * Get port to listen on for current instance
      *
      */
-    async getServerPort(portType: string = 'rest'): Promise<string> {
+    public async getServerPort(portType: string = 'rest'): Promise<string> {
         if (!portType) {
             portType = DEFAULT_SERVER_PORT_TYPE;
         }
@@ -106,7 +117,7 @@ export class LocalConfigProvider extends AbstractConfigProvider {
         return port;
     }
 
-    async getServerHost() {
+    public async getServerHost() {
         if (process.env[`KAPETA_LOCAL_SERVER`]) {
             return process.env[`KAPETA_LOCAL_SERVER`];
         }
@@ -117,7 +128,7 @@ export class LocalConfigProvider extends AbstractConfigProvider {
     /**
      * Register instance with cluster service
      */
-    async registerInstance() {
+    public async registerInstance() {
         const url = this.getInstanceUrl();
         await this._sendRequest({
             url,
@@ -139,7 +150,7 @@ export class LocalConfigProvider extends AbstractConfigProvider {
         process.on('SIGTERM', exitHandler);
     }
 
-    async instanceStopped() {
+    public async instanceStopped() {
         const url = this.getInstanceUrl();
         return this._sendRequest({
             url,
@@ -147,29 +158,128 @@ export class LocalConfigProvider extends AbstractConfigProvider {
         });
     }
 
-    async getServiceAddress(resourceName: string, portType: string) {
+    public async getServiceAddress(resourceName: string, portType: string) {
         const url = this.getServiceClientUrl(resourceName, portType);
 
         return await this._sendGET<string>(url);
     }
 
-    async getResourceInfo(resourceType: string, portType: string, resourceName: string) {
+    public async getResourceInfo<Options = DefaultResourceOptions, Credentials = DefaultCredentials>(resourceType: string, portType: string, resourceName: string) {
         const url = this.getResourceInfoUrl(resourceType, portType, resourceName);
 
-        return await this._sendGET<ResourceInfo>(url);
+        return await this._sendGET<ResourceInfo<Options, Credentials>>(url);
     }
 
-    async getInstanceHost(instanceId: string) {
+    public async getInstanceHost(instanceId: string) {
         const url = this.getInstanceHostUrl(instanceId);
 
         return await this._sendGET<string>(url);
     }
 
-    async getInstanceConfig() {
+    public async getInstanceConfig() {
         const url = this.getInstanceConfigUrl();
 
         return await this._sendGET<any>(url);
     }
+
+    public async getInstanceOperator<Options = any, Credentials = DefaultCredentials>(instanceId: string) {
+        const url = this.getInstanceOperatorUrl(instanceId);
+        return await this._sendGET<InstanceOperator<Options, Credentials>>(url);
+    }
+
+    public async getInstanceForConsumer<BlockType = BlockDefinition>(resourceName: string): Promise<BlockInstanceDetails<BlockType> | null> {
+        const plan = await this.getPlan();
+        if (!plan) {
+            throw new Error('Could not find plan');
+        }
+        const instanceId = this.getInstanceId();
+        const connection = plan.spec.connections
+            .find(connection =>
+                connection.consumer.blockId === instanceId &&
+                connection.consumer.resourceName === resourceName);
+
+        if (!connection) {
+            throw new Error(`Could not find connection for consumer ${resourceName}`);
+        }
+
+        const instance = plan.spec.blocks.find(b => b.id === connection.provider.blockId);
+
+        if (!instance) {
+            throw new Error(`Could not find instance ${connection.provider.blockId} in plan`);
+        }
+
+        const block = await this.getBlock(instance.block.ref);
+
+        if (!block) {
+            throw new Error(`Could not find block ${instance.block.ref} in plan`);
+        }
+
+        return {
+            instanceId: connection.provider.blockId,
+            connections: [connection],
+            block: block as BlockType
+        }
+    }
+
+    public async getInstancesForProvider<BlockType = BlockDefinition>(resourceName: string): Promise<BlockInstanceDetails<BlockType>[]> {
+        const plan = await this.getPlan();
+        if (!plan) {
+            throw new Error('Could not find plan');
+        }
+        const instanceId = this.getInstanceId();
+
+        const blockDetails:{[key:string]:BlockInstanceDetails<BlockType>} = {};
+        const connections = plan.spec.connections
+            .filter(connection =>
+                connection.provider.blockId === instanceId &&
+                connection.provider.resourceName === resourceName);
+
+
+        for(const connection of connections) {
+            const blockInstanceId = connection.consumer.blockId;
+            if (blockDetails[blockInstanceId]) {
+                blockDetails[blockInstanceId].connections.push(connection);
+                continue;
+            }
+
+            const instance = plan.spec.blocks.find(b => b.id === blockInstanceId);
+            if (!instance) {
+                throw new Error(`Could not find instance ${blockInstanceId} in plan`);
+            }
+
+            const block = await this.getBlock(instance.block.ref);
+            if (!block) {
+                throw new Error(`Could not find block ${instance.block.ref} in plan`);
+            }
+
+            blockDetails[blockInstanceId] = {
+                instanceId: blockInstanceId,
+                connections: [connection],
+                block: block as BlockType
+            };
+        }
+
+        return Object.values(blockDetails);
+    }
+
+    public async getPlan() {
+        const url = this.getAssetReadUrl(this.getSystemId());
+        const wrapper =  await this._sendGET<AssetWrapper<Plan>>(url);
+        if (!wrapper) {
+            return null;
+        }
+        return wrapper.data;
+    }
+
+    public async getBlock(ref:string) {
+        const url = this.getAssetReadUrl(ref);
+        const wrapper = await this._sendGET<AssetWrapper<BlockDefinition>>(url);
+        if (!wrapper) {
+            return null;
+        }
+        return wrapper.data;
+    }
+
 
     async load() {
         this.getClusterConfig();
@@ -185,6 +295,11 @@ export class LocalConfigProvider extends AbstractConfigProvider {
 
     getClusterServiceBaseUrl() {
         return KapetaClusterConfig.getClusterServiceAddress();
+    }
+
+    private getAssetReadUrl(ref:string) {
+        const subPath = `/assets/read?ref=${encodeURIComponent(ref)}&ensure=false`;
+        return this.getClusterServiceBaseUrl() + subPath;
     }
 
     private getInstanceUrl() {
@@ -216,6 +331,11 @@ export class LocalConfigProvider extends AbstractConfigProvider {
         const subPath = `/consumes/resource/${this.encode(operatorType)}/${this.encode(portType)}/${this.encode(
             resourceName
         )}`;
+        return this.getConfigBaseUrl() + subPath;
+    }
+
+    private getInstanceOperatorUrl(instanceId: string) {
+        const subPath = `/operator/${this.encode(instanceId)}`;
         return this.getConfigBaseUrl() + subPath;
     }
 

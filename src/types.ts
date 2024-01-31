@@ -2,6 +2,7 @@
  * Copyright 2023 Kapeta Inc.
  * SPDX-License-Identifier: MIT
  */
+import {BlockDefinition, Connection} from "@kapeta/schemas";
 
 export interface InstanceValue {
     id: string;
@@ -18,17 +19,45 @@ export interface Identity {
     instanceId: string;
 }
 
-export interface ResourceInfo {
+export interface DefaultCredentials {
+    username: string,
+    password: string,
+}
+
+export interface DefaultResourceOptions {
+    dbName: string
+    fullName: string
+    [key: string]: string
+}
+
+export interface InstanceOperatorPort {
+    protocol: 'tcp'|'udp',
+    port: number,
+}
+
+export interface InstanceOperator<Options = any,Credentials = DefaultCredentials> {
+    hostname: string,
+    ports: { [portType:string]:InstanceOperatorPort },
+    path?: string,
+    query?: string,
+    hash?: string,
+    credentials?: Credentials,
+    options: Options
+}
+
+export interface BlockInstanceDetails<BlockType = BlockDefinition> {
+    instanceId: string,
+    block: BlockType,
+    connections: Connection[]
+}
+
+export interface ResourceInfo<Options = DefaultResourceOptions, Credentials = DefaultCredentials> {
     host: string;
     port: string | number;
     type: string;
     protocol: string;
-    options?: {
-        [key: string]: string;
-    };
-    credentials?: {
-        [key: string]: string;
-    };
+    options?: Options;
+    credentials?: Credentials;
 }
 
 export interface ConfigProvider {
@@ -70,7 +99,7 @@ export interface ConfigProvider {
     /**
      * Get resource info for given resource type, port type and resource name
      */
-    getResourceInfo(resourceType: string, portType: string, resourceName: string): Promise<ResourceInfo | null>;
+    getResourceInfo<Options = DefaultResourceOptions, Credentials = DefaultCredentials>(resourceType: string, portType: string, resourceName: string): Promise<ResourceInfo<Options,Credentials> | null>;
 
     /**
      * Get hostname and port for instance
@@ -93,4 +122,10 @@ export interface ConfigProvider {
     getOrDefault<T = any>(path: string, defaultValue: T): T;
 
     get<T = any>(path: string): T | undefined;
+
+    getInstanceOperator<Options = any,Credentials extends DefaultCredentials = DefaultCredentials>(instanceId: string): Promise<InstanceOperator<Options,Credentials>|null>
+
+    getInstancesForProvider<BlockType = BlockDefinition>(resourceName:string): Promise<BlockInstanceDetails<BlockType>[]>
+
+    getInstanceForConsumer<BlockType = BlockDefinition>(resourceName:string): Promise<BlockInstanceDetails<BlockType>|null>
 }

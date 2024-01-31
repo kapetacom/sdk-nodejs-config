@@ -3,11 +3,21 @@
  * SPDX-License-Identifier: MIT
  */
 
-import { AbstractConfigProvider } from './AbstractConfigProvider';
+import {AbstractConfigProvider} from './AbstractConfigProvider';
 import _ from 'lodash';
-import { ResourceInfo } from '../types';
+import {
+    BlockInstanceDetails,
+    DefaultCredentials,
+    DefaultResourceOptions,
+    InstanceOperator,
+    ResourceInfo
+} from '../types';
+import {BlockDefinition, Connection, Deployment} from "@kapeta/schemas";
+import FS from 'node:fs/promises'
+import YAML from "yaml";
 
 const DEFAULT_SERVER_PORT_TYPE = 'rest';
+const MOUNTED_CONFIG_YML = '/kapeta/deployment.yml';
 
 function toEnvName(name: string) {
     return name.toUpperCase().trim().replace(/[.,-]/g, '_');
@@ -76,13 +86,119 @@ export class KubernetesConfigProvider extends AbstractConfigProvider {
         throw new Error(`Missing environment variable for internal resource: ${envVar}`);
     }
 
-    async getResourceInfo(resourceType: string, portType: string, resourceName: string) {
+    async getResourceInfo<Options = DefaultResourceOptions, Credentials = DefaultCredentials>(resourceType: string, portType: string, resourceName: string) {
         const envVar = `KAPETA_CONSUMER_RESOURCE_${toEnvName(resourceName)}_${toEnvName(portType)}`;
         if (envVar in process.env) {
-            return JSON.parse(process.env[envVar]!) as ResourceInfo;
+            return JSON.parse(process.env[envVar]!) as ResourceInfo<Options, Credentials>;
         }
 
         throw new Error(`Missing environment variable for operator resource: ${envVar}`);
+    }
+
+    public async getInstanceOperator<Options = any, Credentials = DefaultCredentials>(instanceId: string): Promise<InstanceOperator<Options, Credentials> | null> {
+        const envVar = `KAPETA_INSTANCE_OPERATOR_${toEnvName(instanceId)}`;
+        if (envVar in process.env) {
+            return JSON.parse(process.env[envVar]!) as InstanceOperator<Options, Credentials>;
+        }
+
+        throw new Error(`Missing environment variable for operator instance: ${envVar}`);
+    }
+
+    public async getInstanceForConsumer<BlockType = BlockDefinition>(resourceName: string): Promise<BlockInstanceDetails<BlockType> | null> {
+        const envVar = `KAPETA_INSTANCE_FOR_CONSUMER_${toEnvName(resourceName)}`;
+        if (envVar in process.env) {
+            return JSON.parse(process.env[envVar]!) as BlockInstanceDetails<BlockType>;
+        }
+
+        const instanceId = this.getInstanceId();
+        const deployment = await this.getDeployment();
+        const connection = deployment.spec.network.find((network) =>
+            network.consumer.id === instanceId &&
+            network.consumer.resource === resourceName);
+
+        if (!connection) {
+            throw new Error(`Could not find connection for consumer ${resourceName}`);
+        }
+
+        const instance = deployment.spec.services.find(s => s.id === connection.consumer.id);
+
+        if (!instance) {
+            throw new Error(`Could not find instance ${connection.consumer.id} in deployment`);
+        }
+
+        return  {
+            instanceId: instance.id,
+            block: instance.blockDefinition as BlockType,
+            connections: [{
+                provider: {
+                    resourceName: connection.provider.resource!,
+                    blockId: connection.provider.id
+                },
+                consumer: {
+                    resourceName: connection.consumer.resource!,
+                    blockId: connection.consumer.id
+                },
+                port: connection.port
+            }]
+        }
+
+    }
+
+    public async getInstancesForProvider<BlockType = BlockDefinition>(resourceName: string): Promise<BlockInstanceDetails<BlockType>[]> {
+        const envVar = `KAPETA_INSTANCES_FOR_PROVIDER_${toEnvName(resourceName)}`;
+        if (envVar in process.env) {
+            return JSON.parse(process.env[envVar]!) as BlockInstanceDetails<BlockType>[];
+        }
+
+        const instanceId = this.getInstanceId();
+        const deployment = await this.getDeployment();
+        const connections = deployment.spec.network.filter((network) =>
+            network.provider.id === instanceId &&
+            network.provider.resourceName === resourceName);
+
+        const blockDetails: { [key: string]: BlockInstanceDetails<BlockType> } = {};
+
+        for (const connection of connections) {
+            const instance = deployment.spec.services.find(s => s.id === connection.consumer.id);
+
+            if (!instance) {
+                throw new Error(`Could not find instance ${connection.consumer.id} in deployment`);
+            }
+
+            const stdConnection: Connection = {
+                provider: {
+                    resourceName: connection.provider.resource!,
+                    blockId: connection.provider.id
+                },
+                consumer: {
+                    resourceName: connection.consumer.resource!,
+                    blockId: connection.consumer.id
+                },
+                port: connection.port
+            };
+
+            if (blockDetails[instance.id]) {
+                blockDetails[instance.id].connections.push(stdConnection);
+                continue;
+            }
+
+            blockDetails[instance.id] = {
+                instanceId: instance.id,
+                block: instance.blockDefinition as BlockType,
+                connections: [stdConnection]
+            }
+        }
+
+        return Object.values(blockDetails);
+    }
+
+    public async getDeployment(): Promise<Deployment> {
+        try {
+            const yml = await FS.readFile(MOUNTED_CONFIG_YML);
+            return YAML.parse(yml.toString()) as Deployment;
+        } catch (e) {
+            throw new Error(`Failed to read deployment from mounted file: ${MOUNTED_CONFIG_YML}`);
+        }
     }
 
     getProviderId() {
