@@ -30,10 +30,14 @@ export interface DefaultResourceOptions {
     [key: string]: string
 }
 
-export interface InstanceOperator<Options = any,Credentials = DefaultCredentials> {
-    protocol: string,
-    hostname: string,
+export interface InstanceOperatorPort {
+    protocol: 'tcp'|'udp',
     port: number,
+}
+
+export interface InstanceOperator<Options = any,Credentials = DefaultCredentials> {
+    hostname: string,
+    ports: { [portType:string]:InstanceOperatorPort },
     path?: string,
     query?: string,
     hash?: string,
