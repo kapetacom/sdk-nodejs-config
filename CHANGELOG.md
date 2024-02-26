@@ -1,3 +1,10 @@
+## [2.1.1](https://github.com/kapetacom/sdk-nodejs-config/compare/v2.1.0...v2.1.1) (2024-02-26)
+
+
+### Bug Fixes
+
+* Make it possible to get things locally without ensuring ([#14](https://github.com/kapetacom/sdk-nodejs-config/issues/14)) ([c851c91](https://github.com/kapetacom/sdk-nodejs-config/commit/c851c91ed1ba0afdef078095b0d2fab3f49d66f9))
+
 # [2.1.0](https://github.com/kapetacom/sdk-nodejs-config/compare/v2.0.0...v2.1.0) (2024-01-31)
 
 
