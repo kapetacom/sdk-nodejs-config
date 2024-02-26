@@ -164,8 +164,8 @@ export class LocalConfigProvider extends AbstractConfigProvider {
         return await this._sendGET<string>(url);
     }
 
-    public async getResourceInfo<Options = DefaultResourceOptions, Credentials = DefaultCredentials>(resourceType: string, portType: string, resourceName: string) {
-        const url = this.getResourceInfoUrl(resourceType, portType, resourceName);
+    public async getResourceInfo<Options = DefaultResourceOptions, Credentials = DefaultCredentials>(resourceType: string, portType: string, resourceName: string, ensure:boolean = true) {
+        const url = this.getResourceInfoUrl(resourceType, portType, resourceName, ensure);
 
         return await this._sendGET<ResourceInfo<Options, Credentials>>(url);
     }
@@ -182,8 +182,8 @@ export class LocalConfigProvider extends AbstractConfigProvider {
         return await this._sendGET<any>(url);
     }
 
-    public async getInstanceOperator<Options = any, Credentials = DefaultCredentials>(instanceId: string) {
-        const url = this.getInstanceOperatorUrl(instanceId);
+    public async getInstanceOperator<Options = any, Credentials = DefaultCredentials>(instanceId: string, ensure:boolean = true) {
+        const url = this.getInstanceOperatorUrl(instanceId, ensure);
         return await this._sendGET<InstanceOperator<Options, Credentials>>(url);
     }
 
@@ -327,15 +327,15 @@ export class LocalConfigProvider extends AbstractConfigProvider {
         return this.getConfigBaseUrl() + subPath;
     }
 
-    private getResourceInfoUrl(operatorType: string, portType: string, resourceName: string) {
+    private getResourceInfoUrl(operatorType: string, portType: string, resourceName: string, ensure:boolean) {
         const subPath = `/consumes/resource/${this.encode(operatorType)}/${this.encode(portType)}/${this.encode(
             resourceName
-        )}`;
+        )}?ensure=${ensure?'true':'false'}`;
         return this.getConfigBaseUrl() + subPath;
     }
 
-    private getInstanceOperatorUrl(instanceId: string) {
-        const subPath = `/operator/${this.encode(instanceId)}`;
+    private getInstanceOperatorUrl(instanceId: string, ensure:boolean) {
+        const subPath = `/operator/${this.encode(instanceId)}?ensure=${ensure?'true':'false'}`;
         return this.getConfigBaseUrl() + subPath;
     }
 
