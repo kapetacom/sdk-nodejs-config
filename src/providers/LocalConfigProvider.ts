@@ -442,7 +442,7 @@ export class LocalConfigProvider extends AbstractConfigProvider {
                     .catch(error => {
                         if (retries > 0) {
                             retries--;
-                            console.log(`Failed. Retrying... ${retries} retries left.`);
+                            console.log(`Local cluster server disconnect. Retrying... ${retries} retries left.`);
                             attempt();
                         } else {
                             reject(error);
