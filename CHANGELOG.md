@@ -1,3 +1,10 @@
+## [2.1.2](https://github.com/kapetacom/sdk-nodejs-config/compare/v2.1.1...v2.1.2) (2024-02-29)
+
+
+### Bug Fixes
+
+* bump release ([6599a8e](https://github.com/kapetacom/sdk-nodejs-config/commit/6599a8e9af8371327a29a434dd0aee1ee8a892ed))
+
 ## [2.1.1](https://github.com/kapetacom/sdk-nodejs-config/compare/v2.1.0...v2.1.1) (2024-02-26)
 
 
