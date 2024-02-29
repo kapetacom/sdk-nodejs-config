@@ -363,7 +363,11 @@ export class LocalConfigProvider extends AbstractConfigProvider {
             url: url,
         };
 
-        return this._sendRequest(opts);
+        const promiseFunction = () => {
+            return this._sendRequest<T>(opts);
+        }
+
+        return this.retryPromise(promiseFunction);
     }
 
     /**
@@ -428,5 +432,24 @@ export class LocalConfigProvider extends AbstractConfigProvider {
 
     public getOrDefault<T = any>(path: string, defaultValue: T): T {
         return _.get(this._configuration, path, defaultValue);
+    }
+
+    private retryPromise<T>(promiseFunction: () => Promise<T>, retries: number = 3): Promise<T | null> {
+        return new Promise<T>((resolve, reject) => {
+            function attempt() {
+                promiseFunction()
+                    .then(resolve)
+                    .catch(error => {
+                        if (retries > 0) {
+                            retries--;
+                            console.log(`Local cluster server disconnect. Retrying... ${retries} retries left.`);
+                            attempt();
+                        } else {
+                            reject(error);
+                        }
+                    });
+            }
+            attempt();
+        });
     }
 }
