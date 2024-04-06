@@ -34,14 +34,11 @@ export class KubernetesConfigProvider extends AbstractConfigProvider {
 
     /**
      *
-     * @param {string} blockRef
-     * @param {string} systemId
-     * @param {string} instanceId
-     * @param {BlockDefinition} blockDefinition
-     * @return {Promise<KubernetesConfigProvider>}
      */
     static async create(blockRef: string, systemId: string, instanceId: string, blockDefinition: object) {
-        return new KubernetesConfigProvider(blockRef, systemId, instanceId, blockDefinition);
+        const config = new KubernetesConfigProvider(blockRef, systemId, instanceId, blockDefinition);
+        await config.readLocalConfig();
+        return config;
     }
 
     constructor(blockRef: string, systemId: string, instanceId: string, blockDefinition: object) {
@@ -49,6 +46,7 @@ export class KubernetesConfigProvider extends AbstractConfigProvider {
 
         this._configuration = null;
     }
+
 
     /**
      * Get port to listen on for current instance
@@ -60,8 +58,8 @@ export class KubernetesConfigProvider extends AbstractConfigProvider {
         }
 
         const envVar = `KAPETA_PROVIDER_PORT_${toEnvName(portType)}`;
-        if (envVar in process.env) {
-            return process.env[envVar]!;
+        if (this.hasEnvVar(envVar)) {
+            return this.getEnvVar(envVar);
         }
 
         return '80'; //We default to port 80
@@ -69,8 +67,8 @@ export class KubernetesConfigProvider extends AbstractConfigProvider {
 
     async getServerHost() {
         const envVar = `KAPETA_PROVIDER_HOST`;
-        if (envVar in process.env) {
-            return process.env[envVar]!;
+        if (this.hasEnvVar(envVar)) {
+            return this.getEnvVar(envVar);
         }
 
         //Any host within docker container
@@ -79,8 +77,8 @@ export class KubernetesConfigProvider extends AbstractConfigProvider {
 
     async getServiceAddress(resourceName: string, portType: string) {
         const envVar = `KAPETA_CONSUMER_SERVICE_${toEnvName(resourceName)}_${toEnvName(portType)}`;
-        if (envVar in process.env) {
-            return process.env[envVar]!;
+        if (this.hasEnvVar(envVar)) {
+            return this.getEnvVar(envVar);
         }
 
         throw new Error(`Missing environment variable for internal resource: ${envVar}`);
@@ -88,8 +86,8 @@ export class KubernetesConfigProvider extends AbstractConfigProvider {
 
     async getResourceInfo<Options = DefaultResourceOptions, Credentials = DefaultCredentials>(resourceType: string, portType: string, resourceName: string) {
         const envVar = `KAPETA_CONSUMER_RESOURCE_${toEnvName(resourceName)}_${toEnvName(portType)}`;
-        if (envVar in process.env) {
-            return JSON.parse(process.env[envVar]!) as ResourceInfo<Options, Credentials>;
+        if (this.hasEnvVar(envVar)) {
+            return JSON.parse(this.getEnvVar(envVar)) as ResourceInfo<Options, Credentials>;
         }
 
         throw new Error(`Missing environment variable for operator resource: ${envVar}`);
@@ -97,8 +95,8 @@ export class KubernetesConfigProvider extends AbstractConfigProvider {
 
     public async getInstanceOperator<Options = any, Credentials = DefaultCredentials>(instanceId: string): Promise<InstanceOperator<Options, Credentials> | null> {
         const envVar = `KAPETA_INSTANCE_OPERATOR_${toEnvName(instanceId)}`;
-        if (envVar in process.env) {
-            return JSON.parse(process.env[envVar]!) as InstanceOperator<Options, Credentials>;
+        if (this.hasEnvVar(envVar)) {
+            return JSON.parse(this.getEnvVar(envVar)) as InstanceOperator<Options, Credentials>;
         }
 
         throw new Error(`Missing environment variable for operator instance: ${envVar}`);
@@ -106,8 +104,9 @@ export class KubernetesConfigProvider extends AbstractConfigProvider {
 
     public async getInstanceForConsumer<BlockType = BlockDefinition>(resourceName: string): Promise<BlockInstanceDetails<BlockType> | null> {
         const envVar = `KAPETA_INSTANCE_FOR_CONSUMER_${toEnvName(resourceName)}`;
-        if (envVar in process.env) {
-            return JSON.parse(process.env[envVar]!) as BlockInstanceDetails<BlockType>;
+
+        if (this.hasEnvVar(envVar)) {
+            return JSON.parse(this.getEnvVar(envVar)) as BlockInstanceDetails<BlockType>;
         }
 
         const instanceId = this.getInstanceId();
@@ -146,8 +145,8 @@ export class KubernetesConfigProvider extends AbstractConfigProvider {
 
     public async getInstancesForProvider<BlockType = BlockDefinition>(resourceName: string): Promise<BlockInstanceDetails<BlockType>[]> {
         const envVar = `KAPETA_INSTANCES_FOR_PROVIDER_${toEnvName(resourceName)}`;
-        if (envVar in process.env) {
-            return JSON.parse(process.env[envVar]!) as BlockInstanceDetails<BlockType>[];
+        if (this.hasEnvVar(envVar)) {
+            return JSON.parse(this.getEnvVar(envVar)) as BlockInstanceDetails<BlockType>[];
         }
 
         const instanceId = this.getInstanceId();
@@ -208,9 +207,9 @@ export class KubernetesConfigProvider extends AbstractConfigProvider {
     private getConfiguration<T>(path: string, defaultValue?: T): T | undefined {
         if (!this._configuration) {
             const envVar = `KAPETA_INSTANCE_CONFIG`;
-            if (envVar in process.env) {
+            if (this.hasEnvVar(envVar)) {
                 try {
-                    this._configuration = JSON.parse(process.env[envVar]!);
+                    this._configuration = JSON.parse(this.getEnvVar(envVar));
                 } catch (e) {
                     throw new Error(`Invalid JSON in environment variable: ${envVar}`);
                 }
@@ -237,9 +236,9 @@ export class KubernetesConfigProvider extends AbstractConfigProvider {
 
     async getInstanceHost(instanceId: string): Promise<string> {
         if (!this._instanceHosts) {
-            if (process.env.KAPETA_BLOCK_HOSTS) {
+            if (this.hasEnvVar('KAPETA_BLOCK_HOSTS')) {
                 try {
-                    this._instanceHosts = JSON.parse(process.env.KAPETA_BLOCK_HOSTS);
+                    this._instanceHosts = JSON.parse(this.getEnvVar('KAPETA_BLOCK_HOSTS'));
                 } catch (e) {
                     throw new Error(`Invalid JSON in environment variable: KAPETA_BLOCK_HOSTS`);
                 }
