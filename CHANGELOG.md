@@ -1,3 +1,10 @@
+# [2.2.0](https://github.com/kapetacom/sdk-nodejs-config/compare/v2.1.2...v2.2.0) (2024-04-08)
+
+
+### Features
+
+* Add support for env vars from config file ([#16](https://github.com/kapetacom/sdk-nodejs-config/issues/16)) ([86b7acf](https://github.com/kapetacom/sdk-nodejs-config/commit/86b7acff5980840787ed116eb62bfef4f082db49))
+
 ## [2.1.2](https://github.com/kapetacom/sdk-nodejs-config/compare/v2.1.1...v2.1.2) (2024-02-29)
 
 
