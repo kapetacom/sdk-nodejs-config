@@ -102,8 +102,8 @@ export class LocalConfigProvider extends AbstractConfigProvider {
             portType = DEFAULT_SERVER_PORT_TYPE;
         }
 
-        if (process.env[`KAPETA_LOCAL_SERVER_PORT_${portType.toUpperCase()}`]) {
-            return process.env[`KAPETA_LOCAL_SERVER_PORT_${portType.toUpperCase()}`]!;
+        if (this.hasEnvVar(`KAPETA_LOCAL_SERVER_PORT_${portType.toUpperCase()}`)) {
+            return this.getEnvVar(`KAPETA_LOCAL_SERVER_PORT_${portType.toUpperCase()}`);
         }
 
         const url = this.getProviderPortUrl(portType);
@@ -118,8 +118,8 @@ export class LocalConfigProvider extends AbstractConfigProvider {
     }
 
     public async getServerHost() {
-        if (process.env[`KAPETA_LOCAL_SERVER`]) {
-            return process.env[`KAPETA_LOCAL_SERVER`];
+        if (this.hasEnvVar(`KAPETA_LOCAL_SERVER`)) {
+            return this.getEnvVar(`KAPETA_LOCAL_SERVER`);
         }
         //Locally it's always this
         return '127.0.0.1';
@@ -282,6 +282,7 @@ export class LocalConfigProvider extends AbstractConfigProvider {
 
 
     async load() {
+        await this.readLocalConfig();
         this.getClusterConfig();
     }
 
@@ -379,8 +380,8 @@ export class LocalConfigProvider extends AbstractConfigProvider {
         }
 
         opts.headers[HEADER_KAPETA_ENVIRONMENT] = 'process';
-        if (process.env[KAPETA_ENVIRONMENT_TYPE]) {
-            opts.headers[HEADER_KAPETA_ENVIRONMENT] = process.env[KAPETA_ENVIRONMENT_TYPE];
+        if (this.hasEnvVar(KAPETA_ENVIRONMENT_TYPE)) {
+            opts.headers[HEADER_KAPETA_ENVIRONMENT] = this.getEnvVar(KAPETA_ENVIRONMENT_TYPE);
         }
         opts.headers[HEADER_KAPETA_BLOCK] = this.getBlockReference();
         opts.headers[HEADER_KAPETA_SYSTEM] = this.getSystemId();

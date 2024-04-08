@@ -13,7 +13,9 @@ import {
 } from '../types';
 
 import {BlockDefinition} from "@kapeta/schemas";
+import FS from "node:fs/promises";
 
+export const KAPETA_CONFIG_PATH = 'KAPETA_CONFIG_PATH'
 
 /**
  * Base class for config providers
@@ -24,12 +26,36 @@ export abstract class AbstractConfigProvider implements ConfigProvider {
     private readonly _blockDefinition: object;
     private _systemId: string;
     private _instanceId: string;
+    private _environmentConfig: { [key: string]: string } = {};
 
     constructor(blockRef: string, systemId: string, instanceId: string, blockDefinition: object) {
         this._blockRef = blockRef;
         this._systemId = systemId;
         this._instanceId = instanceId;
         this._blockDefinition = blockDefinition;
+    }
+
+    protected async readLocalConfig() {
+        if (this.hasEnvVar(KAPETA_CONFIG_PATH)) {
+            const configPath = this.getEnvVar(KAPETA_CONFIG_PATH);
+            const config = await FS.readFile(configPath, 'utf8');
+            this._environmentConfig = JSON.parse(config);
+        }
+    }
+
+
+    protected hasEnvVar(envVar: string):boolean {
+        return envVar in process.env || envVar in this._environmentConfig;
+    }
+
+    protected  getEnvVar(envVar: string):string {
+        if (envVar in process.env) {
+            return process.env[envVar]!;
+        }
+        if (envVar in this._environmentConfig) {
+            return this._environmentConfig[envVar];
+        }
+        throw new Error(`Missing environment variable: ${envVar}`);
     }
 
     getBlockDefinition() {
