@@ -10,6 +10,7 @@ import { ConfigProvider, InstanceValue } from './src/types';
 
 import { KubernetesConfigProvider } from './src/providers/KubernetesConfigProvider';
 import { LocalConfigProvider } from './src/providers/LocalConfigProvider';
+import { JsonFileConfigProvider } from './src/providers/JSONFileConfigProvider';
 
 const KAPETA_SYSTEM_TYPE = 'KAPETA_SYSTEM_TYPE';
 const KAPETA_SYSTEM_ID = 'KAPETA_SYSTEM_ID';
@@ -105,7 +106,6 @@ class Config {
         if (CONFIG.PROVIDER) {
             throw new Error('Configuration already initialised once');
         }
-
         let blockYMLPath = Path.join(blockDir, 'kapeta.yml');
 
         if (!FS.existsSync(blockYMLPath)) {
@@ -142,7 +142,10 @@ class Config {
             case 'kubernetes':
                 provider = await KubernetesConfigProvider.create(blockRef, systemId, instanceId, blockDefinition);
                 break;
-
+            case 'json-file':
+            case 'json':
+                provider = await JsonFileConfigProvider.create(blockRef, systemId, instanceId, blockDefinition);
+                break;
             case 'development':
             case 'dev':
             case 'local':
