@@ -1,3 +1,10 @@
+# [2.3.0](https://github.com/kapetacom/sdk-nodejs-config/compare/v2.2.0...v2.3.0) (2025-05-14)
+
+
+### Features
+
+* adding config provider that can load kapeta-config.json files ([7fed7af](https://github.com/kapetacom/sdk-nodejs-config/commit/7fed7af5e58a952f1c63b22cf0541e1a7b6b7e89))
+
 # [2.2.0](https://github.com/kapetacom/sdk-nodejs-config/compare/v2.1.2...v2.2.0) (2024-04-08)
 
 
