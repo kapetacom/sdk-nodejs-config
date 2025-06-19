@@ -9,13 +9,14 @@ import {
     DefaultCredentials,
     DefaultResourceOptions,
     InstanceOperator,
-    ResourceInfo
+    ResourceInfo,
 } from '../types';
 
-import {BlockDefinition} from "@kapeta/schemas";
-import FS from "node:fs/promises";
+import { BlockDefinition } from '@kapeta/schemas';
+import FS from 'node:fs/promises';
+import zlib from 'node:zlib';
 
-export const KAPETA_CONFIG_PATH = 'KAPETA_CONFIG_PATH'
+export const KAPETA_CONFIG_PATH = 'KAPETA_CONFIG_PATH';
 
 /**
  * Base class for config providers
@@ -38,17 +39,25 @@ export abstract class AbstractConfigProvider implements ConfigProvider {
     protected async readLocalConfig() {
         if (this.hasEnvVar(KAPETA_CONFIG_PATH)) {
             const configPath = this.getEnvVar(KAPETA_CONFIG_PATH);
-            const config = await FS.readFile(configPath, 'utf8');
-            this._environmentConfig = JSON.parse(config);
+            const configBuf = await FS.readFile(configPath);
+            if (configPath.endsWith('.gz')) {
+                const arrayBuffer = configBuf.buffer.slice(
+                    configBuf.byteOffset,
+                    configBuf.byteOffset + configBuf.byteLength
+                ) as ArrayBuffer;
+                const config = zlib.gunzipSync(arrayBuffer).toString('utf-8');
+                this._environmentConfig = JSON.parse(config);
+            } else {
+                this._environmentConfig = JSON.parse(configBuf.toString('utf-8'));
+            }
         }
     }
 
-
-    protected hasEnvVar(envVar: string):boolean {
+    protected hasEnvVar(envVar: string): boolean {
         return envVar in process.env || envVar in this._environmentConfig;
     }
 
-    protected  getEnvVar(envVar: string):string {
+    protected getEnvVar(envVar: string): string {
         if (envVar in process.env) {
             return process.env[envVar]!;
         }
@@ -99,9 +108,15 @@ export abstract class AbstractConfigProvider implements ConfigProvider {
 
     abstract getOrDefault<T = any>(path: string, defaultValue: T): T;
 
-    abstract getInstanceForConsumer<BlockType = BlockDefinition>(resourceName: string): Promise<BlockInstanceDetails<BlockType> | null>;
+    abstract getInstanceForConsumer<BlockType = BlockDefinition>(
+        resourceName: string
+    ): Promise<BlockInstanceDetails<BlockType> | null>;
 
-    abstract getInstanceOperator<Options = any, Credentials = DefaultCredentials>(instanceId: string): Promise<InstanceOperator<Options, Credentials> | null>;
+    abstract getInstanceOperator<Options = any, Credentials = DefaultCredentials>(
+        instanceId: string
+    ): Promise<InstanceOperator<Options, Credentials> | null>;
 
-    abstract getInstancesForProvider<BlockType = BlockDefinition>(resourceName: string): Promise<BlockInstanceDetails<BlockType>[]>;
+    abstract getInstancesForProvider<BlockType = BlockDefinition>(
+        resourceName: string
+    ): Promise<BlockInstanceDetails<BlockType>[]>;
 }
