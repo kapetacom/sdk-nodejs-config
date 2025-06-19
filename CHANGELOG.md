@@ -1,3 +1,10 @@
+# [2.4.0](https://github.com/kapetacom/sdk-nodejs-config/compare/v2.3.0...v2.4.0) (2025-06-19)
+
+
+### Features
+
+* support gzipped kapeta instance config ([#18](https://github.com/kapetacom/sdk-nodejs-config/issues/18)) ([9272094](https://github.com/kapetacom/sdk-nodejs-config/commit/9272094b35f34feea15cfd6a1c07609b7ef2a658))
+
 # [2.3.0](https://github.com/kapetacom/sdk-nodejs-config/compare/v2.2.0...v2.3.0) (2025-05-14)
 
 
