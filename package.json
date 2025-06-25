@@ -1,6 +1,6 @@
 {
     "name": "@kapeta/sdk-config",
-    "version": "2.4.0",
+    "version": "2.4.1",
     "description": "Config API for Kapeta SDK",
     "type": "commonjs",
     "exports": {

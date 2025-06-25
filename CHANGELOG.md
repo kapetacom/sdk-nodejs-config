@@ -1,3 +1,10 @@
+## [2.4.1](https://github.com/kapetacom/sdk-nodejs-config/compare/v2.4.0...v2.4.1) (2025-06-25)
+
+
+### Bug Fixes
+
+* make sure env vars map the same as in deployer ([#19](https://github.com/kapetacom/sdk-nodejs-config/issues/19)) ([bb91347](https://github.com/kapetacom/sdk-nodejs-config/commit/bb91347998b013899d2ba75854775dbe70423ed3))
+
 # [2.4.0](https://github.com/kapetacom/sdk-nodejs-config/compare/v2.3.0...v2.4.0) (2025-06-19)
 
 
