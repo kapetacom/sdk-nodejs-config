@@ -3,25 +3,22 @@
  * SPDX-License-Identifier: MIT
  */
 
-import {AbstractConfigProvider} from './AbstractConfigProvider';
+import { AbstractConfigProvider } from './AbstractConfigProvider';
 import _ from 'lodash';
 import {
     BlockInstanceDetails,
     DefaultCredentials,
     DefaultResourceOptions,
     InstanceOperator,
-    ResourceInfo
+    ResourceInfo,
 } from '../types';
-import {BlockDefinition, Connection, Deployment} from "@kapeta/schemas";
-import FS from 'node:fs/promises'
-import YAML from "yaml";
+import { BlockDefinition, Connection, Deployment } from '@kapeta/schemas';
+import FS from 'node:fs/promises';
+import YAML from 'yaml';
+import { toEnvName } from '../helpers';
 
 const DEFAULT_SERVER_PORT_TYPE = 'rest';
 const MOUNTED_CONFIG_YML = '/kapeta/deployment.yml';
-
-function toEnvName(name: string) {
-    return name.toUpperCase().trim().replace(/[.,-]/g, '_');
-}
 
 /**
  * Kubernetes config provider - used when running kapeta clusters within kubernetes
@@ -46,7 +43,6 @@ export class KubernetesConfigProvider extends AbstractConfigProvider {
 
         this._configuration = null;
     }
-
 
     /**
      * Get port to listen on for current instance
@@ -84,7 +80,11 @@ export class KubernetesConfigProvider extends AbstractConfigProvider {
         throw new Error(`Missing environment variable for internal resource: ${envVar}`);
     }
 
-    async getResourceInfo<Options = DefaultResourceOptions, Credentials = DefaultCredentials>(resourceType: string, portType: string, resourceName: string) {
+    async getResourceInfo<Options = DefaultResourceOptions, Credentials = DefaultCredentials>(
+        resourceType: string,
+        portType: string,
+        resourceName: string
+    ) {
         const envVar = `KAPETA_CONSUMER_RESOURCE_${toEnvName(resourceName)}_${toEnvName(portType)}`;
         if (this.hasEnvVar(envVar)) {
             return JSON.parse(this.getEnvVar(envVar)) as ResourceInfo<Options, Credentials>;
@@ -93,7 +93,9 @@ export class KubernetesConfigProvider extends AbstractConfigProvider {
         throw new Error(`Missing environment variable for operator resource: ${envVar}`);
     }
 
-    public async getInstanceOperator<Options = any, Credentials = DefaultCredentials>(instanceId: string): Promise<InstanceOperator<Options, Credentials> | null> {
+    public async getInstanceOperator<Options = any, Credentials = DefaultCredentials>(
+        instanceId: string
+    ): Promise<InstanceOperator<Options, Credentials> | null> {
         const envVar = `KAPETA_INSTANCE_OPERATOR_${toEnvName(instanceId)}`;
         if (this.hasEnvVar(envVar)) {
             return JSON.parse(this.getEnvVar(envVar)) as InstanceOperator<Options, Credentials>;
@@ -102,7 +104,9 @@ export class KubernetesConfigProvider extends AbstractConfigProvider {
         throw new Error(`Missing environment variable for operator instance: ${envVar}`);
     }
 
-    public async getInstanceForConsumer<BlockType = BlockDefinition>(resourceName: string): Promise<BlockInstanceDetails<BlockType> | null> {
+    public async getInstanceForConsumer<BlockType = BlockDefinition>(
+        resourceName: string
+    ): Promise<BlockInstanceDetails<BlockType> | null> {
         const envVar = `KAPETA_INSTANCE_FOR_CONSUMER_${toEnvName(resourceName)}`;
 
         if (this.hasEnvVar(envVar)) {
@@ -111,39 +115,42 @@ export class KubernetesConfigProvider extends AbstractConfigProvider {
 
         const instanceId = this.getInstanceId();
         const deployment = await this.getDeployment();
-        const connection = deployment.spec.network.find((network) =>
-            network.consumer.id === instanceId &&
-            network.consumer.resource === resourceName);
+        const connection = deployment.spec.network.find(
+            (network) => network.consumer.id === instanceId && network.consumer.resource === resourceName
+        );
 
         if (!connection) {
             throw new Error(`Could not find connection for consumer ${resourceName}`);
         }
 
-        const instance = deployment.spec.services.find(s => s.id === connection.consumer.id);
+        const instance = deployment.spec.services.find((s) => s.id === connection.consumer.id);
 
         if (!instance) {
             throw new Error(`Could not find instance ${connection.consumer.id} in deployment`);
         }
 
-        return  {
+        return {
             instanceId: instance.id,
             block: instance.blockDefinition as BlockType,
-            connections: [{
-                provider: {
-                    resourceName: connection.provider.resource!,
-                    blockId: connection.provider.id
+            connections: [
+                {
+                    provider: {
+                        resourceName: connection.provider.resource!,
+                        blockId: connection.provider.id,
+                    },
+                    consumer: {
+                        resourceName: connection.consumer.resource!,
+                        blockId: connection.consumer.id,
+                    },
+                    port: connection.port,
                 },
-                consumer: {
-                    resourceName: connection.consumer.resource!,
-                    blockId: connection.consumer.id
-                },
-                port: connection.port
-            }]
-        }
-
+            ],
+        };
     }
 
-    public async getInstancesForProvider<BlockType = BlockDefinition>(resourceName: string): Promise<BlockInstanceDetails<BlockType>[]> {
+    public async getInstancesForProvider<BlockType = BlockDefinition>(
+        resourceName: string
+    ): Promise<BlockInstanceDetails<BlockType>[]> {
         const envVar = `KAPETA_INSTANCES_FOR_PROVIDER_${toEnvName(resourceName)}`;
         if (this.hasEnvVar(envVar)) {
             return JSON.parse(this.getEnvVar(envVar)) as BlockInstanceDetails<BlockType>[];
@@ -151,14 +158,14 @@ export class KubernetesConfigProvider extends AbstractConfigProvider {
 
         const instanceId = this.getInstanceId();
         const deployment = await this.getDeployment();
-        const connections = deployment.spec.network.filter((network) =>
-            network.provider.id === instanceId &&
-            network.provider.resourceName === resourceName);
+        const connections = deployment.spec.network.filter(
+            (network) => network.provider.id === instanceId && network.provider.resourceName === resourceName
+        );
 
         const blockDetails: { [key: string]: BlockInstanceDetails<BlockType> } = {};
 
         for (const connection of connections) {
-            const instance = deployment.spec.services.find(s => s.id === connection.consumer.id);
+            const instance = deployment.spec.services.find((s) => s.id === connection.consumer.id);
 
             if (!instance) {
                 throw new Error(`Could not find instance ${connection.consumer.id} in deployment`);
@@ -167,13 +174,13 @@ export class KubernetesConfigProvider extends AbstractConfigProvider {
             const stdConnection: Connection = {
                 provider: {
                     resourceName: connection.provider.resource!,
-                    blockId: connection.provider.id
+                    blockId: connection.provider.id,
                 },
                 consumer: {
                     resourceName: connection.consumer.resource!,
-                    blockId: connection.consumer.id
+                    blockId: connection.consumer.id,
                 },
-                port: connection.port
+                port: connection.port,
             };
 
             if (blockDetails[instance.id]) {
@@ -184,8 +191,8 @@ export class KubernetesConfigProvider extends AbstractConfigProvider {
             blockDetails[instance.id] = {
                 instanceId: instance.id,
                 block: instance.blockDefinition as BlockType,
-                connections: [stdConnection]
-            }
+                connections: [stdConnection],
+            };
         }
 
         return Object.values(blockDetails);
