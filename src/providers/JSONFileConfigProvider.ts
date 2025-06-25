@@ -6,26 +6,23 @@
 /**
  * JSON file config provider - reads config from a JSON file where env vars are keys
  */
-import {AbstractConfigProvider} from './AbstractConfigProvider';
+import { AbstractConfigProvider } from './AbstractConfigProvider';
 import _ from 'lodash';
 import {
     BlockInstanceDetails,
     DefaultCredentials,
     DefaultResourceOptions,
     InstanceOperator,
-    ResourceInfo
+    ResourceInfo,
 } from '../types';
-import {BlockDefinition, Connection, Deployment} from "@kapeta/schemas";
+import { BlockDefinition, Connection, Deployment } from '@kapeta/schemas';
 import FS from 'node:fs/promises';
 import Path from 'node:path';
 import { parse as parseYAML } from 'yaml';
+import { toEnvName } from '../helpers';
 
 const DEFAULT_SERVER_PORT_TYPE = 'rest';
 const DEFAULT_CONFIG_FILE = Path.join(process.cwd(), 'kapeta-config.json');
-
-function toEnvName(name: string) {
-    return name.toUpperCase().trim().replace(/[.,-]/g, '_');
-}
 
 export class JsonFileConfigProvider extends AbstractConfigProvider {
     private _configData: Record<string, any>;
@@ -36,9 +33,9 @@ export class JsonFileConfigProvider extends AbstractConfigProvider {
      * Create a new JSON file config provider
      */
     static async create(
-        blockRef: string, 
-        systemId: string, 
-        instanceId: string, 
+        blockRef: string,
+        systemId: string,
+        instanceId: string,
         blockDefinition: object,
         configPath?: string
     ) {
@@ -48,10 +45,10 @@ export class JsonFileConfigProvider extends AbstractConfigProvider {
     }
 
     constructor(
-        blockRef: string, 
-        systemId: string, 
-        instanceId: string, 
-        blockDefinition: object, 
+        blockRef: string,
+        systemId: string,
+        instanceId: string,
+        blockDefinition: object,
         private readonly configPath: string = DEFAULT_CONFIG_FILE
     ) {
         super(blockRef, systemId, instanceId, blockDefinition);
@@ -62,9 +59,12 @@ export class JsonFileConfigProvider extends AbstractConfigProvider {
         try {
             const data = await FS.readFile(this.configPath, 'utf-8');
             this._configData = JSON.parse(data);
-            
+
             // Special handling for KAPETA_INSTANCE_CONFIG
-            if (this._configData.KAPETA_INSTANCE_CONFIG && typeof this._configData.KAPETA_INSTANCE_CONFIG === 'string') {
+            if (
+                this._configData.KAPETA_INSTANCE_CONFIG &&
+                typeof this._configData.KAPETA_INSTANCE_CONFIG === 'string'
+            ) {
                 try {
                     this._instanceConfig = JSON.parse(this._configData.KAPETA_INSTANCE_CONFIG);
                 } catch (e: any) {
@@ -146,20 +146,22 @@ export class JsonFileConfigProvider extends AbstractConfigProvider {
                     const yml = await FS.readFile(this.configPath.replace('.json', '.yml'));
                     this._deployment = parseYAML(yml.toString()) as Deployment;
                 } catch (err: any) {
-                    throw new Error(`No consumer instance found in config and failed to read deployment file: ${err.message}`);
+                    throw new Error(
+                        `No consumer instance found in config and failed to read deployment file: ${err.message}`
+                    );
                 }
             }
 
             const instanceId = this.getInstanceId();
-            const connection = this._deployment.spec.network.find((network) =>
-                network.consumer.id === instanceId &&
-                network.consumer.resource === resourceName);
+            const connection = this._deployment.spec.network.find(
+                (network) => network.consumer.id === instanceId && network.consumer.resource === resourceName
+            );
 
             if (!connection) {
                 throw new Error(`Could not find connection for consumer ${resourceName}`);
             }
 
-            const instance = this._deployment.spec.services.find(s => s.id === connection.consumer.id);
+            const instance = this._deployment.spec.services.find((s) => s.id === connection.consumer.id);
 
             if (!instance) {
                 throw new Error(`Could not find instance ${connection.consumer.id} in deployment`);
@@ -168,17 +170,19 @@ export class JsonFileConfigProvider extends AbstractConfigProvider {
             return {
                 instanceId: instance.id,
                 block: instance.blockDefinition as BlockType,
-                connections: [{
-                    provider: {
-                        resourceName: connection.provider.resource!,
-                        blockId: connection.provider.id
+                connections: [
+                    {
+                        provider: {
+                            resourceName: connection.provider.resource!,
+                            blockId: connection.provider.id,
+                        },
+                        consumer: {
+                            resourceName: connection.consumer.resource!,
+                            blockId: connection.consumer.id,
+                        },
+                        port: connection.port,
                     },
-                    consumer: {
-                        resourceName: connection.consumer.resource!,
-                        blockId: connection.consumer.id
-                    },
-                    port: connection.port
-                }]
+                ],
             };
         }
     }
@@ -195,19 +199,21 @@ export class JsonFileConfigProvider extends AbstractConfigProvider {
                     const yml = await FS.readFile(this.configPath.replace('.json', '.yml'));
                     this._deployment = parseYAML(yml.toString()) as Deployment;
                 } catch (err: any) {
-                    throw new Error(`No provider instances found in config and failed to read deployment file: ${err.message}`);
+                    throw new Error(
+                        `No provider instances found in config and failed to read deployment file: ${err.message}`
+                    );
                 }
             }
 
             const instanceId = this.getInstanceId();
-            const connections = this._deployment.spec.network.filter((network) =>
-                network.provider.id === instanceId &&
-                network.provider.resourceName === resourceName);
+            const connections = this._deployment.spec.network.filter(
+                (network) => network.provider.id === instanceId && network.provider.resourceName === resourceName
+            );
 
             const blockDetails: { [key: string]: BlockInstanceDetails<BlockType> } = {};
 
             for (const connection of connections) {
-                const instance = this._deployment.spec.services.find(s => s.id === connection.consumer.id);
+                const instance = this._deployment.spec.services.find((s) => s.id === connection.consumer.id);
 
                 if (!instance) {
                     throw new Error(`Could not find instance ${connection.consumer.id} in deployment`);
@@ -216,13 +222,13 @@ export class JsonFileConfigProvider extends AbstractConfigProvider {
                 const stdConnection: Connection = {
                     provider: {
                         resourceName: connection.provider.resource!,
-                        blockId: connection.provider.id
+                        blockId: connection.provider.id,
                     },
                     consumer: {
                         resourceName: connection.consumer.resource!,
-                        blockId: connection.consumer.id
+                        blockId: connection.consumer.id,
                     },
-                    port: connection.port
+                    port: connection.port,
                 };
 
                 if (blockDetails[instance.id]) {
@@ -233,7 +239,7 @@ export class JsonFileConfigProvider extends AbstractConfigProvider {
                 blockDetails[instance.id] = {
                     instanceId: instance.id,
                     block: instance.blockDefinition as BlockType,
-                    connections: [stdConnection]
+                    connections: [stdConnection],
                 };
             }
 
@@ -251,7 +257,7 @@ export class JsonFileConfigProvider extends AbstractConfigProvider {
             const yml = await FS.readFile(ymlPath);
             this._deployment = parseYAML(yml.toString()) as Deployment;
             return this._deployment;
-        } catch (e: any ) {
+        } catch (e: any) {
             throw new Error(`Failed to read deployment from file: ${e.message}`);
         }
     }
